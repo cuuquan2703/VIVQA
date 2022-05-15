@@ -213,7 +213,7 @@ def main(args):
                     batch_loss += loss.item() * batch_size
                     
                     # Calculate accuracy for classification task
-                    acc = utils.compute_score_with_logits(output, label)
+                    acc = utils.calc_acc(output, label)
                     batch_acc += acc
 
                     if phase == 'train':

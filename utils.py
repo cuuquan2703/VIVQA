@@ -354,6 +354,11 @@ def softmax(x):
     e_x = np.exp(x - np.max(x))
     return e_x / e_x.sum(axis=0)
 
+def calc_acc(y_pred, y_target):
+    y_pred = F.softmax(y_pred, dim=1)
+    y_pred = torch.argmax(y_pred, dim=1, keepdim=False)
+    return torch.sum(y_pred == y_target).float() / y_target.shape[0]
+
 def compute_score_with_logits(logits, labels):
     logits = torch.max(logits, 1)[1].data  # argmax
     one_hots = torch.zeros(*labels.size()).to(logits.device)
