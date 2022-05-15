@@ -389,6 +389,7 @@ class CMSA_Model(nn.Module):
         self.fc = fc
         self.classifier = classifier
         self.cma = cma
+        self.self_att = None
 
     def forward(self, v, q):
         """Forward
