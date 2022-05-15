@@ -106,11 +106,6 @@ def main(args):
     args.device = device
 
     torch.cuda.set_device(device)
-    
-    # Create VQA model
-    constructor = 'build_%s' % args.model
-    model = getattr(base_model, constructor)(args)
-    model.to(device)
 
     data_transforms = {
         'train': transforms.Compose([
@@ -142,6 +137,11 @@ def main(args):
     print('Number of classes: ', args.num_classes)
     print("Dataset size: ", data_size)
     print("Dataloader size: ", len(dataloaders['train']), len(dataloaders['test']))
+    
+    # Create VQA model
+    constructor = 'build_%s' % args.model
+    model = getattr(base_model, constructor)(args)
+    model.to(device)
     
     # Initialize optimizer algorithm
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
