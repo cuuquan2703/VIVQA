@@ -40,7 +40,7 @@ class ViVQADataset(data.Dataset):
             csv_dict_reader = DictReader(csv_file)
             self.entries = list(csv_dict_reader)
         
-        self.ans2id = json.load(open(os.path.join, encoding="utf8"))
+        self.ans2id = json.load(open(self.json_path, encoding="utf8"))
         self.num_classes = len(self.ans2id)
         self.tokenize(question_len)
 
