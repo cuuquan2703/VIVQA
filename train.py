@@ -206,6 +206,7 @@ def main(args):
 
                     # Make predictions for this batch
                     output = model.forward(img, question)
+                    output = model.classify(output)
 
                     # Compute the loss and accuracy
                     loss = loss_fn(output, label)
