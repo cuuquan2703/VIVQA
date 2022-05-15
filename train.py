@@ -86,6 +86,7 @@ def get_arguments():
     parser.add_argument('--emb_init', type=str, default='biowordvec', choices=['glove', 'biowordvec', 'biosentvec'])
     parser.add_argument('--self_att', action='store_true', default=False, help='Use Self Attention?')
     parser.add_argument('--use_spatial', action='store_true', default=False, help='Use spatial feature?')
+    parser.add_argument('--use_cma', action='store_true', default=False, help='Use CMA?')
     parser.add_argument('--result_fold', type=str, default='results')
 
     return parser.parse_args()
