@@ -31,8 +31,8 @@ def get_arguments():
 
     # Model setting
     parser.add_argument('--backbone', type=str, default='resnet34')
-    parser.add_argument('--bert_type', type=str, default='biobert')
-    parser.add_argument('--bert_pretrained', type=str, default='dmis-lab/biobert-large-cased-v1.1-squad')
+    parser.add_argument('--bert_type', type=str, default='phobert')
+    parser.add_argument('--bert_pretrained', type=str, default='vinai/phobert-base')
     parser.add_argument('--input_size', type=int, default=224)
     parser.add_argument('--data_dir', type=str, default='/content/dataset')
     parser.add_argument('--output', type=str, default='/content')
@@ -243,7 +243,7 @@ def main(args):
                 print('Saving this best model...')
                 is_save_best_model = True
                 best_val_acc = batch_acc
-                best_model = copy.deepcopy(model.backbone.state_dict())
+                best_model = copy.deepcopy(model.state_dict())
                 torch.save(best_model, save_model_path_name) 
                 # best_bert_model = copy.deepcopy(model.cmsa.q_emb.state_dict())
         
