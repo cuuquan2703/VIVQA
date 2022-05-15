@@ -104,9 +104,6 @@ def main(args):
     
     device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else "cpu")
     args.device = device
-        
-    # save_dir_root = os.path.join(os.path.dirname(os.path.abspath(__file__)))
-    save_dir = args.save_dir
 
     torch.cuda.set_device(device)
     
@@ -142,6 +139,7 @@ def main(args):
     
     args.num_classes = datasets.num_classes
     
+    print('Number of classes: ', args.num_classes)
     print("Dataset size: ", data_size)
     print("Dataloader size: ", len(dataloaders['train']), len(dataloaders['test']))
     
@@ -162,6 +160,7 @@ def main(args):
     start_train_time = time.time()
     
     # save best model weights
+    save_dir = args.output
     now = datetime.now()
     now_str = now.strftime("%d_%m_%Y__%H_%M_%S")
     best_model_filename = '{}_{}_{}_{}.pt'.format(args.dataset_name, args.backbone, args.bert_type, now_str)
