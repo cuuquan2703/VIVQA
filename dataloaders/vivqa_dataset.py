@@ -61,7 +61,7 @@ class ViVQADataset(data.Dataset):
 
     def __getitem__(self, item):
         question = self.entries[item]['question']
-        img_path = os.path.join(self.image_dir, f"{self.entries[item]['image']}.jpg")
+        img_path = os.path.join(self.image_dir, f"{self.entries[item]['img_id']}.jpg")
         answer = self.entries[item]['answer']
         label = self.ans2id[answer]
 
