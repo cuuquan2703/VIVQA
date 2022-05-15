@@ -16,12 +16,8 @@ from torchvision.utils import make_grid
 # from tensorboardX import SummaryWriter
 
 # from model.ResNet import ResNet18, ResNet34, ResNet50, ResNet101 
-from classifier import Classifier
 # from model.segment_decoder import Decoder
-from convert import Convert
 import base_model
-from language_model import BertQuestionEmbedding
-from backbone import initialize_backbone_model
 
 from dataloaders import custom_transforms as trforms
 from dataloaders.vivqa_dataset import ViVQADataset
