@@ -132,7 +132,7 @@ def main(args):
     
     data_size =  { mode: len(datasets[mode]) for mode in ['train', 'test'] }
     
-    args.num_classes = datasets.num_classes
+    args.num_classes = datasets['train'].num_classes
     
     print('Number of classes: ', args.num_classes)
     print("Dataset size: ", data_size)
