@@ -31,10 +31,11 @@ class ViVQADataset(data.Dataset):
         self.tokenizer = AutoTokenizer.from_pretrained(pretrained)
 
         self.data_dir = args.data_dir
-        self.dataset_path = os.path.join(self.data_dir, '{mode}.csv')
+        self.dataset_path = os.path.join(self.data_dir, f'{mode}.csv')
         self.image_dir = os.path.join(self.data_dir, mode)
         self.json_path = os.path.join(self.data_dir, 'answer.json')
 
+        print('Reading dataset...')
         with open(self.dataset_path, mode = 'r', encoding='utf8') as csv_file:
             csv_dict_reader = DictReader(csv_file)
             self.entries = list(csv_dict_reader)
