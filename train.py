@@ -35,11 +35,17 @@ def get_arguments():
     parser.add_argument('--bert_pretrained', type=str, default='dmis-lab/biobert-large-cased-v1.1-squad')
     parser.add_argument('--input_size', type=int, default=224)
     parser.add_argument('--data_dir', type=str, default='/content/dataset')
+    parser.add_argument('--output', type=str, default='/content')
     
     parser.add_argument('--v_dim', type=int, default=1024)
     # Joint representation C dimension
     parser.add_argument('--q_dim', type=int, default=1024,
                         help='dim of joint semantic features')
+    
+    # Choices of attention models
+    parser.add_argument('--model', type=str, default='CMSA', choices=['BAN', 'SAN', 'CMSA'],
+                        help='the model we use')
+    
     # BAN - Bilinear Attention Networks
     parser.add_argument('--gamma', type=int, default=2,
                         help='glimpse in Bilinear Attention Networks')
@@ -66,7 +72,6 @@ def get_arguments():
     parser.add_argument('--nepochs', type=int, default=100)
     parser.add_argument('--resume_epoch', type=int, default=100)
     parser.add_argument('--train_fold', type=str, default='/content')
-    parser.add_argument('--save_dir', type=str, default='/content')
     parser.add_argument('--run_id', type=int, default=-1)
     parser.add_argument('--T', type=int, default=2)
 
@@ -160,7 +165,7 @@ def main(args):
     now = datetime.now()
     now_str = now.strftime("%d_%m_%Y__%H_%M_%S")
     best_model_filename = '{}_{}_{}_{}.pt'.format(args.dataset_name, args.backbone, args.bert_type, now_str)
-    backbone_path_name = os.path.join(save_dir, best_model_filename)
+    save_model_path_name = os.path.join(save_dir, best_model_filename)
     # biobert_path_name = os.path.join(save_dir, '{}_{}_{}.pt'.format(args.bert_type, args.backbone, now_str))
     
     # save train log
@@ -239,7 +244,7 @@ def main(args):
                 is_save_best_model = True
                 best_val_acc = batch_acc
                 best_model = copy.deepcopy(model.backbone.state_dict())
-                torch.save(best_model, backbone_path_name) 
+                torch.save(best_model, save_model_path_name) 
                 # best_bert_model = copy.deepcopy(model.cmsa.q_emb.state_dict())
         
         row = pd.Series(data={
