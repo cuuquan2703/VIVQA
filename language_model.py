@@ -99,17 +99,24 @@ class QuestionEmbedding(nn.Module):
 class BertQuestionEmbedding(nn.Module):
     def __init__(self, 
                  pretrained="dmis-lab/biobert-large-cased-v1.1-squad",
-                 device='cpu'):
+                 device='cpu', use_mhsa=True):
         """Module for question embedding using pretrained BERT variants
         """
         super(BertQuestionEmbedding, self).__init__()
         self.device = device
         self.config = BertConfig.from_pretrained(pretrained)
         self.model = BertModel.from_pretrained(pretrained).to(device)
-
+        self.mhsa = None
+        if use_mhsa:
+            embed_dim = self.model.config.hidden_size
+            self.mhsa = nn.MultiheadAttention(embed_dim, 12, batch_first=True)
+        
     def forward(self, tokens):  
         output = self.model(**tokens)
-        return output.last_hidden_state
+        if self.mhsa:
+            q = output.last_hidden_state
+            output, _ = self.mhsa.forward(q, q, q)
+        return output
 
 
 class SelfAttention(nn.Module):

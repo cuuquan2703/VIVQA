@@ -453,7 +453,7 @@ def build_CMSA(args):
 
     print('Use BERT as question embedding')
     q_dim = args.q_dim
-    q_emb = BertQuestionEmbedding(args.bert_pretrained, args.device)
+    q_emb = BertQuestionEmbedding(args.bert_pretrained, args.device, use_mhsa=True)
     utils.set_parameters_requires_grad(q_emb, True)
 
     self_att = None
