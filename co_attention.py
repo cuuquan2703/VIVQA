@@ -13,14 +13,14 @@ class CoTransformerEncoder(nn.Module):
         self.norm_1 = nn.LayerNorm(q_dim)
         self.dropout_1 = nn.Dropout(drop_out)
         
-        # Transformer Encoder 1 for Question features
+        # Transformer Encoder 2 for Question features
         self.mhsa_2 = nn.MultiheadAttention(q_dim, kdim=v_dim, vdim=v_dim, num_heads=num_heads, batch_first=True, dropout=drop_out)
         self.ffw_2 = PositionwiseFeedForward(q_dim, hidden_dim, drop_out)
         self.norm_2 = nn.LayerNorm(v_dim)
         self.dropout_2 = nn.Dropout(drop_out)
             
     def forward(self, v, q):
-        '''Forward
+        ''' Forward
         v: [batch, k, v_dim]
         q: [batch, seq_len, q_dim]
         '''
@@ -43,7 +43,7 @@ class CoTransformerBlock(nn.Module):
         self.transformer_2 = nn.TransformerEncoderLayer(q_dim, nhead=num_head_trfm, dim_feedforward=hidden_size, dropout=drop_out, batch_first=True)
         
     def forward(self, v, q):
-        '''Forward
+        ''' Forward
         v: [batch, k, v_dim]
         q: [batch, seq_len, q_dim]
         '''

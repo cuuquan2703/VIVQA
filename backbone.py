@@ -3,6 +3,7 @@ import torch.nn as nn
 from torchvision import models
 import torch.nn.functional as F
 import utils
+from transformers import ViTFeatureExtractor, ViTModel, VitConfig, DeiTFeatureExtractor, DeiTModel
 
 class CustomDenseNet121(models.densenet.DenseNet):
     def __init__(self, **kwargs):
@@ -21,6 +22,19 @@ class CustomDenseNet121(models.densenet.DenseNet):
 def load_pretrained_model(model, model_path):
     model.load_state_dict(torch.load(model_path))
     return model
+
+
+class VisionTransformerModel(nn.Module):
+    def __init__(self, pretrained):
+        """Module for question embedding using pretrained BERT variants
+        """
+        super(VisionTransformerModel, self).__init__()
+        self.config = VitConfig.from_pretrained(pretrained)
+        self.model = ViTModel.from_pretrained(pretrained)
+        
+    def forward(self, features):  
+        output = self.model(**features)
+        return output.last_hidden_state
 
 
 def initialize_backbone_model(model_name, is_training=True, use_imagenet_pretrained=True, model_path=None):
@@ -94,10 +108,16 @@ def initialize_backbone_model(model_name, is_training=True, use_imagenet_pretrai
         channels = [48, 96, 192, 384]
         num_ftrs = 768 * 7 * 7
 
+    elif model_name == 'vit':
+        
+        model_ft = VisionTransformerModel(pretrained='google/vit-base-patch16-224-in21k')
+        # num_ftrs = model_ft.classifier.in_features
+        # channels = [48, 96, 192, 384]
+        # num_ftrs = 768 * 7 * 7
     else:
         print("Invalid model name, exiting...")
         exit()
-    
+
     if model_path is not None:
         model_ft = load_pretrained_model(model_ft, model_path)
     
