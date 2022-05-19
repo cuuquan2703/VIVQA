@@ -20,8 +20,8 @@ from torchvision.utils import make_grid
 import base_model
 
 from dataloaders import custom_transforms as trforms
-from dataloaders.vivqa_dataset import ViVQADataset
-
+from dataloaders.vivqa_dataset import ViVQADataset, VTCollator
+from transformers import ViTFeatureExtractor, AutoTokenizer
 import utils
 
 
@@ -33,17 +33,18 @@ def get_arguments():
     parser.add_argument('--backbone', type=str, default='resnet34')
     parser.add_argument('--bert_type', type=str, default='phobert')
     parser.add_argument('--bert_pretrained', type=str, default='vinai/phobert-base')
+    parser.add_argument('--image_pretrained', type=str, default='google/vit-base-patch16-224-in21k')
     parser.add_argument('--input_size', type=int, default=224)
     parser.add_argument('--data_dir', type=str, default='/content/dataset')
     parser.add_argument('--output', type=str, default='/content')
     
-    parser.add_argument('--v_dim', type=int, default=1024)
+    parser.add_argument('--v_dim', type=int, default=768)
     # Joint representation C dimension
-    parser.add_argument('--q_dim', type=int, default=1024,
-                        help='dim of joint semantic features')
+    parser.add_argument('--q_dim', type=int, default=768,
+                        help='dim of bert question features')
     
     # Choices of attention models
-    parser.add_argument('--model', type=str, default='CMSA', choices=['BAN', 'SAN', 'CMSA'],
+    parser.add_argument('--model', type=str, default='CMSA', choices=['CMSA', 'CrossAtt'],
                         help='the model we use')
     
     # BAN - Bilinear Attention Networks
@@ -108,27 +109,33 @@ def main(args):
 
     torch.cuda.set_device(device)
 
-    data_transforms = {
-        'train': transforms.Compose([
-            trforms.FixedResize(size=(args.input_size, args.input_size)),
-            trforms.RandomHorizontalFlip(),
-            trforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-            trforms.ToTensor()
-        ]),
-        'test': transforms.Compose([
-            trforms.FixedResize(size=(args.input_size, args.input_size)),
-            trforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
-            trforms.ToTensor()
-        ]),
-    }
+    # data_transforms = {
+    #     'train': transforms.Compose([
+    #         trforms.FixedResize(size=(args.input_size, args.input_size)),
+    #         trforms.RandomHorizontalFlip(),
+    #         trforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+    #         trforms.ToTensor()
+    #     ]),
+    #     'test': transforms.Compose([
+    #         trforms.FixedResize(size=(args.input_size, args.input_size)),
+    #         trforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)),
+    #         trforms.ToTensor()
+    #     ]),
+    # }
+    tokenizer = AutoTokenizer.from_pretrained(args.bert_pretrained)
+    feature_extractor = ViTFeatureExtractor(do_resize=True, size=args.input_size, 
+                                            do_normalize=True, 
+                                            image_mean=(0.485, 0.456, 0.406), image_std=(0.229, 0.224, 0.225)
+                                            ).from_pretrained(args.image_pretrained)
+    collator = VTCollator(feature_extractor, tokenizer, args.question_len)
     
     # Load train and validation dataset
     datasets = { mode: ViVQADataset(args, pretrained=args.bert_pretrained, question_len=args.question_len,
-                                     mode=mode, transform=data_transforms[mode])
+                                     mode=mode, transform=None) #data_transforms[mode])
                     for mode in ['train', 'test'] }
     
     dataloaders = { mode: DataLoader(datasets[mode], batch_size=args.batch_size,
-                                     shuffle=True, num_workers=2)
+                                     shuffle=True, num_workers=2, collate_fn=collator)
                     for mode in ['train', 'test'] }
     
     data_size =  { mode: len(datasets[mode]) for mode in ['train', 'test'] }
@@ -151,7 +158,7 @@ def main(args):
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.update_lr_every)
     
     # Initialize loss function
-    loss_fn = torch.nn.CrossEntropyLoss()
+    loss_fn = torch.nn.BCEWithLogitsLoss()
     
     EPOCHS = args.nepochs
     best_val_acc = 0.
@@ -164,7 +171,7 @@ def main(args):
     save_dir = args.output
     now = datetime.now()
     now_str = now.strftime("%d_%m_%Y__%H_%M_%S")
-    best_model_filename = '{}_{}_{}.pt'.format(args.backbone, args.bert_type, now_str)
+    best_model_filename = '{}_{}_{}_{}.pt'.format(args.model, args.backbone, args.bert_type, now_str)
     save_model_path_name = os.path.join(save_dir, best_model_filename)
     # biobert_path_name = os.path.join(save_dir, '{}_{}_{}.pt'.format(args.bert_type, args.backbone, now_str))
     
@@ -175,6 +182,7 @@ def main(args):
     
     for epoch in range(EPOCHS):
         print(f'\nEPOCH {epoch}/{EPOCHS - 1}')
+        print('lr = ', scheduler.get_last_lr())
         print('-' * 10)
         start_epoch_time = time.time()
         

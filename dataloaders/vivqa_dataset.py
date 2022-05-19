@@ -42,7 +42,7 @@ class ViVQADataset(data.Dataset):
         
         self.ans2id = json.load(open(self.json_path, encoding="utf8"))
         self.num_classes = len(self.ans2id)
-        self.tokenize(question_len)
+        # self.tokenize(question_len)
 
     def tokenize(self, max_length=20):
         """Tokenizes the questions.
@@ -91,3 +91,19 @@ class ViVQADataset(data.Dataset):
 
     def __len__(self):
         return len(self.entries)
+
+
+class VTCollator:
+
+    def __init__(self, feature_extractor, tokenizer, question_length=14): 
+        self.feature_extractor = feature_extractor
+        self.tokenizer = tokenizer
+        self.question_length = question_length
+
+    def __call__(self, batch):
+        encodings = {}
+        encodings['image'] = self.feature_extractor([x['image'] for x in batch], return_tensors='pt') 
+        encodings['question'] = self.tokenizer([x['question'] for x in batch], padding='max_length', 
+                                               max_length=self.question_length, truncation=True, return_tensors='pt')
+        encodings['label'] = torch.tensor([x['label'] for x in batch])
+        return encodings

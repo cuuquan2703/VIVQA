@@ -2,10 +2,10 @@
 This code is developed based on Jin-Hwa Kim's repository (Bilinear Attention Networks - https://github.com/jnhwkim/ban-vqa) by Xuan B. Nguyen
 """
 
-from pickle import NONE
 import torch
 import torch.nn as nn
 from attention import BiAttention, StackedAttention
+from co_attention import CoTransformerBlock
 from language_model import WordEmbedding, QuestionEmbedding, BertQuestionEmbedding, SelfAttention
 from classifier import SimpleClassifier
 from fc import FCNet
@@ -488,3 +488,54 @@ def build_CMSA(args):
         cma = MultiHeadAttention(n_head=1, d_model=q_dim, d_k=q_dim, d_v=q_dim)
 
     return CMSA_Model(v_emb, q_emb, cmsa, fc, classifier, args, cma)
+
+
+class CrossAttentionModel(nn.Module):
+
+    def __init__(self, q_emb, v_emb, co_att_layers, classifier, args) -> None:
+        super(CrossAttentionModel, self).__init__()
+        self.q_emb = q_emb
+        self.v_emb = v_emb
+        self.classifier = classifier
+        self.co_att_layers = co_att_layers
+        self.flatten = nn.Flatten()
+        self.args = args
+        
+    def forward(self, v, q):
+        q_emb = self.q_emb(q)
+        v_emb = self.v_emb(v)
+        
+        # q_emb = q_emb[:, 0, :]
+        # v_emb = v_emb[:, 0, :]
+        q_emb = q_emb.mean(1)
+        v_emb = v_emb.mean(1)
+        
+        for co_att_layer in self.co_att_layers:
+            q_emb, v_emb = co_att_layer(q_emb, v_emb)
+        
+        out = q_emb * v_emb
+        out = self.flatten(out)
+        return out
+    
+    def classify(self, x):
+        return self.classifier(x)
+    
+
+def build_CrossAtt(args):
+    print('Use BERT as question embedding')
+    q_dim = args.q_dim
+    q_emb = BertQuestionEmbedding(args.bert_pretrained, args.device, use_mhsa=True)
+    utils.set_parameters_requires_grad(q_emb, True)
+
+    print('Loading Image feature extractor...')
+    v_dim = args.v_dim
+    v_emb = initialize_backbone_model(args.backbone, use_imagenet_pretrained=args.image_pretrained)[0]
+
+    coatt_layers = nn.ModuleList([])
+    for _ in range(args.n_coatt):
+        coatt_layers.append(CoTransformerBlock(q_dim, v_dim, 8, 2048, args.dropout))
+
+    classifier = SimpleClassifier(
+        q_dim, q_dim * 2, args.num_classes, args)
+
+    return CrossAttentionModel(q_emb, v_emb, coatt_layers, classifier, args)

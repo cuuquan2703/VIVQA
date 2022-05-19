@@ -110,7 +110,7 @@ def initialize_backbone_model(model_name, is_training=True, use_imagenet_pretrai
 
     elif model_name == 'vit':
         
-        model_ft = VisionTransformerModel(pretrained='google/vit-base-patch16-224-in21k')
+        model_ft = VisionTransformerModel(pretrained=use_imagenet_pretrained)
         # num_ftrs = model_ft.classifier.in_features
         # channels = [48, 96, 192, 384]
         # num_ftrs = 768 * 7 * 7
