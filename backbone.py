@@ -29,7 +29,7 @@ class VisionTransformerModel(nn.Module):
         """Module for question embedding using pretrained BERT variants
         """
         super(VisionTransformerModel, self).__init__()
-        self.config = VitConfig.from_pretrained(pretrained)
+        self.config = ViTConfig.from_pretrained(pretrained)
         self.model = ViTModel.from_pretrained(pretrained)
         
     def forward(self, features):  
