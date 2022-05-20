@@ -24,11 +24,11 @@ class CoTransformerEncoder(nn.Module):
         v: [batch, k, v_dim]
         q: [batch, seq_len, q_dim]
         '''
-        x_1 = self.mhsa_1(v, q, q)
+        x_1, _ = self.mhsa_1(v, q, q)
         x_1 = self.dropout_1(self.norm_1(x_1) + v)
         x_1 = self.ffw_1(x_1)
         
-        x_2 = self.mhsa_2(q, v, v)
+        x_2, _ = self.mhsa_2(q, v, v)
         x_2 = self.dropout_2(self.norm_2(x_2) + q)
         x_2 = self.ffw_2(x_2)
         
