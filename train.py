@@ -42,7 +42,8 @@ def get_arguments():
     # Joint representation C dimension
     parser.add_argument('--q_dim', type=int, default=768,
                         help='dim of bert question features')
-    
+    parser.add_argument('--n_coatt', type=int, default=2,
+                        help='dim of bert question features')
     # Choices of attention models
     parser.add_argument('--model', type=str, default='CMSA', choices=['CMSA', 'CrossAtt'],
                         help='the model we use')
