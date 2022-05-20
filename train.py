@@ -207,7 +207,8 @@ def main(args):
                     # Every data instance is an input + img_label pair
                     question, img, label = data['question'], data['image'], data['label']
                     question, img, label = question.to(device), img.to(device), label.to(device)
-                    
+                    one_hot_label = torch.nn.functional.one_hot(label, args.num_classes)
+
                     batch_size = label.size()[0]
                     
                     # Zero your gradients for every batch!
@@ -218,7 +219,7 @@ def main(args):
                     output = model.classify(output)
 
                     # Compute the loss and accuracy
-                    loss = loss_fn(output, label)
+                    loss = loss_fn(output, one_hot_label)
                     
                     batch_loss += loss.item() * batch_size
                     
