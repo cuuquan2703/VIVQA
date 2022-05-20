@@ -159,7 +159,7 @@ def main(args):
     scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.update_lr_every)
     
     # Initialize loss function
-    loss_fn = torch.nn.BCEWithLogitsLoss()
+    loss_fn = torch.nn.CrossEntropyLoss()
     
     EPOCHS = args.nepochs
     best_val_acc = 0.
@@ -207,7 +207,7 @@ def main(args):
                     # Every data instance is an input + img_label pair
                     question, img, label = data['question'], data['image'], data['label']
                     question, img, label = question.to(device), img.to(device), label.to(device)
-                    one_hot_label = torch.nn.functional.one_hot(label, args.num_classes).float()
+                    # one_hot_label = torch.nn.functional.one_hot(label, args.num_classes).float()
 
                     batch_size = label.size()[0]
                     
@@ -219,7 +219,7 @@ def main(args):
                     output = model.classify(output)
 
                     # Compute the loss and accuracy
-                    loss = loss_fn(output, one_hot_label)
+                    loss = loss_fn(output, label)
                     
                     batch_loss += loss.item() * batch_size
                     
