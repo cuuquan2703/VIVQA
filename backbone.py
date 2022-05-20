@@ -3,7 +3,7 @@ import torch.nn as nn
 from torchvision import models
 import torch.nn.functional as F
 import utils
-from transformers import ViTFeatureExtractor, ViTModel, VitConfig, DeiTFeatureExtractor, DeiTModel
+from transformers import ViTFeatureExtractor, ViTModel, ViTConfig, DeiTFeatureExtractor, DeiTModel
 
 class CustomDenseNet121(models.densenet.DenseNet):
     def __init__(self, **kwargs):
