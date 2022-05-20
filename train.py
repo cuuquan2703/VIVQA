@@ -208,7 +208,7 @@ def main(args):
                     question, img, label = data['question'], data['image'], data['label']
                     question, img, label = question.to(device), img.to(device), label.to(device)
                     
-                    batch_size = img.size()[0]
+                    batch_size = label.size()[0]
                     
                     # Zero your gradients for every batch!
                     optimizer.zero_grad()
