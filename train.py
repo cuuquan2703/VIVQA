@@ -207,7 +207,7 @@ def main(args):
                     # Every data instance is an input + img_label pair
                     question, img, label = data['question'], data['image'], data['label']
                     question, img, label = question.to(device), img.to(device), label.to(device)
-                    one_hot_label = torch.nn.functional.one_hot(label, args.num_classes)
+                    one_hot_label = torch.nn.functional.one_hot(label, args.num_classes).float()
 
                     batch_size = label.size()[0]
                     
