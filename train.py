@@ -160,8 +160,9 @@ def main(args):
     optimizer = optim.Adamax(model.parameters(), lr=args.init_lr, weight_decay=args.weight_decay)
     scheduler = get_linear_schedule_with_warmup(optimizer, 
                                                 num_warmup_steps=args.warmup_steps,
-                                                num_training_steps=args.nepochs,
+                                                num_training_steps=args.nepochs + 1,
                                                 last_epoch = -1)
+    scheduler.step()  # skip step with lr=0.0
     # Initialize loss function
     loss_fn = torch.nn.CrossEntropyLoss()
     
