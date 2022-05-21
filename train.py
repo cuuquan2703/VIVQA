@@ -21,7 +21,7 @@ import base_model
 
 from dataloaders import custom_transforms as trforms
 from dataloaders.vivqa_dataset import ViVQADataset, VTCollator
-from transformers import ViTFeatureExtractor, AutoTokenizer
+from transformers import ViTFeatureExtractor, AutoTokenizer, get_linear_schedule_with_warmup
 import utils
 
 
@@ -78,10 +78,11 @@ def get_arguments():
     parser.add_argument('--T', type=int, default=2)
 
     # Optimizer setting
-    parser.add_argument('--lr', type=float, default=1e-5)
+    parser.add_argument('--init_lr', type=float, default=1e-5)
+    parser.add_argument('--max_lr', type=float, default=5e-5)
     parser.add_argument('--weight_decay', type=float, default=5e-4)
     parser.add_argument('--momentum', type=float, default=0.9)
-    parser.add_argument('--update_lr_every', type=int, default=20)
+    parser.add_argument('--warmup_steps', type=int, default=20)
 
     parser.add_argument('--save_every', type=int, default=5)
     parser.add_argument('--log_every', type=int, default=25)
@@ -155,9 +156,12 @@ def main(args):
     # Initialize optimizer algorithm
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     # optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    optimizer = optim.Adamax(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
-    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.update_lr_every)
-    
+    # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.update_lr_every)
+    optimizer = optim.Adamax(model.parameters(), lr=args.init_lr, weight_decay=args.weight_decay)
+    scheduler = get_linear_schedule_with_warmup(optimizer, 
+                                                num_warmup_steps=args.warmup_steps,
+                                                num_training_steps=args.nepochs,
+                                                last_epoch = -1)
     # Initialize loss function
     loss_fn = torch.nn.CrossEntropyLoss()
     
