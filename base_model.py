@@ -507,8 +507,10 @@ class CrossAttentionModel(nn.Module):
         
         # q_emb = q_emb[:, 0, :]
         # v_emb = v_emb[:, 0, :]
-        q_emb = q_emb.mean(1)
+        
+        # q_emb = q_emb.mean(1)
         v_emb = v_emb.mean(1)
+        v_emb = v_emb.repeat_interleave(self.args.question_len, 1)
         
         for co_att_layer in self.co_att_layers:
             q_emb, v_emb = co_att_layer(q_emb, v_emb)
