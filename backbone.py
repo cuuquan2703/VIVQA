@@ -108,7 +108,7 @@ def initialize_backbone_model(model_name, is_training=True, use_imagenet_pretrai
         channels = [48, 96, 192, 384]
         num_ftrs = 768 * 7 * 7
 
-    elif model_name == 'vit':
+    elif model_name == 'vit' or model_name == 'deit':
         
         model_ft = VisionTransformerModel(pretrained=use_imagenet_pretrained)
         # num_ftrs = model_ft.classifier.in_features
