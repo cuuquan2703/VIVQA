@@ -157,7 +157,7 @@ def main(args):
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     # optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.update_lr_every)
-    optimizer = optim.AdamW(model.parameters(), lr=args.init_lr, weight_decay=args.weight_decay)
+    optimizer = optim.Adamax(model.parameters(), lr=args.init_lr, weight_decay=args.weight_decay)
     scheduler = get_linear_schedule_with_warmup(optimizer, 
                                                 num_warmup_steps=args.warmup_steps,
                                                 num_training_steps=args.nepochs + 1,
