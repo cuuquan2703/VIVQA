@@ -21,7 +21,7 @@ import base_model
 
 from dataloaders import custom_transforms as trforms
 from dataloaders.vivqa_dataset import ViVQADataset, VTCollator
-from transformers import AutoFeatureExtractor, AutoTokenizer, get_linear_schedule_with_warmup
+from transformers import ViTFeatureExtractor, DeiTFeatureExtractor, AutoTokenizer, get_linear_schedule_with_warmup
 import utils
 
 
@@ -125,9 +125,9 @@ def main(args):
     #     ]),
     # }
     tokenizer = AutoTokenizer.from_pretrained(args.bert_pretrained)
-    feature_extractor = AutoFeatureExtractor(do_resize=True, size=args.input_size, 
-                                            do_normalize=True, 
-                                            image_mean=(0.485, 0.456, 0.406), image_std=(0.229, 0.224, 0.225)
+    feature_extractor = DeiTFeatureExtractor(do_resize=True, size=args.input_size, 
+                                             do_normalize=True, 
+                                             image_mean=(0.485, 0.456, 0.406), image_std=(0.229, 0.224, 0.225)
                                             ).from_pretrained(args.image_pretrained)
     collator = VTCollator(feature_extractor, tokenizer, args.question_len)
     
