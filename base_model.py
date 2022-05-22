@@ -515,7 +515,7 @@ class CrossAttentionModel(nn.Module):
         for co_att_layer in self.co_att_layers:
             q_emb, v_emb = co_att_layer(q_emb, v_emb)
         
-        out = q_emb * v_emb
+        out = q_emb + v_emb
         out = out.mean(1, keepdim =True)
         out = self.flatten(out)
         return out
