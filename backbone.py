@@ -3,7 +3,7 @@ import torch.nn as nn
 from torchvision import models
 import torch.nn.functional as F
 import utils
-from transformers import ViTFeatureExtractor, ViTModel, ViTConfig, DeiTFeatureExtractor, DeiTModel
+from transformers import AutoFeatureExtractor, AutoModel, AutoConfig, DeiTFeatureExtractor, DeiTModel
 
 class CustomDenseNet121(models.densenet.DenseNet):
     def __init__(self, **kwargs):
@@ -29,8 +29,8 @@ class VisionTransformerModel(nn.Module):
         """Module for question embedding using pretrained BERT variants
         """
         super(VisionTransformerModel, self).__init__()
-        self.config = ViTConfig.from_pretrained(pretrained)
-        self.model = ViTModel.from_pretrained(pretrained)
+        self.config = AutoConfig.from_pretrained(pretrained)
+        self.model = AutoModel.from_pretrained(pretrained)
         
     def forward(self, features):  
         output = self.model(**features)
