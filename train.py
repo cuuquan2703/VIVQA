@@ -83,6 +83,7 @@ def get_arguments():
     parser.add_argument('--weight_decay', type=float, default=5e-4)
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--warmup_steps', type=int, default=20)
+    parser.add_argument('--label_smooth', type=float, default=0.0)
 
     parser.add_argument('--save_every', type=int, default=5)
     parser.add_argument('--log_every', type=int, default=25)
@@ -164,7 +165,7 @@ def main(args):
                                                 last_epoch = -1)
     scheduler.step()  # skip step with lr=0.0
     # Initialize loss function
-    loss_fn = torch.nn.CrossEntropyLoss()
+    loss_fn = torch.nn.CrossEntropyLoss(reduction='sum', label_smoothing=args.label_smooth)
     
     EPOCHS = args.nepochs
     best_val_acc = 0.
@@ -226,7 +227,7 @@ def main(args):
                     # Compute the loss and accuracy
                     loss = loss_fn(output, label)
                     
-                    batch_loss += loss.item() * batch_size
+                    batch_loss += loss.item()
                     
                     # Calculate accuracy for classification task
                     acc = utils.calc_acc(output, label)
