@@ -51,3 +51,33 @@ class CoTransformerBlock(nn.Module):
         v_out = self.transformer_1(v_out)
         q_out = self.transformer_2(q_out)
         return v_out, q_out
+
+
+class FusionAttentionFeature(nn.Module):
+    def __init__(self, args) -> None:
+        super(FusionAttentionFeature, self).__init__()
+        self.q_convert = nn.Sequential(*[
+            nn.Linear(args.q_dimn, args.f_mid_dim),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(args.f_mid_dim, args.joint_dim)
+        ])
+        self.v_convert = nn.Sequential(*[
+            nn.Linear(args.v_dimn, args.f_mid_dim),
+            nn.ReLU(),
+            nn.Dropout(0.1),
+            nn.Linear(args.f_mid_dim, args.joint_dim)
+        ])
+        self.layer_norm = nn.LayerNorm(args.joint_dim)
+
+    def forward(self, v_feat, q_feat):
+        '''Forward
+        v_feat: [batch, v_len, v_dim]
+        q_feat: [batch, q_len, q_dim]
+        '''
+        v_converted = self.v_convert(v_feat)
+        q_converted = self.q_convert(q_feat)
+
+        out = self.layer_norm(v_converted + q_converted)
+
+        return out
