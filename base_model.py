@@ -509,11 +509,14 @@ class CrossAttentionModel(nn.Module):
         # v_emb = v_emb[:, 0, :]
         
         # q_emb = q_emb.mean(1, keepdim =True)
-        v_emb = v_emb.mean(1, keepdim =True)
-        v_emb = v_emb.repeat_interleave(self.args.question_len, 1)
+        # v_emb = v_emb.mean(1, keepdim =True)
+        # v_emb = v_emb.repeat_interleave(self.args.question_len, 1)
         
         for co_att_layer in self.co_att_layers:
             q_emb, v_emb = co_att_layer(q_emb, v_emb)
+        
+        v_emb = v_emb.mean(1, keepdim =True)
+        v_emb = v_emb.repeat_interleave(self.args.question_len, 1)
         
         out = q_emb * v_emb
         out = out.mean(1, keepdim =True)
@@ -540,7 +543,7 @@ def build_CrossAtt(args):
 
     coatt_layers = nn.ModuleList([])
     for _ in range(args.n_coatt):
-        coatt_layers.append(CoTransformerBlock(q_dim, v_dim, 8, 2048, args.dropout))
+        coatt_layers.append(CoTransformerBlock(v_dim, q_dim, 8, 2048, args.dropout))
 
     classifier = SimpleClassifier(
         q_dim, q_dim * 2, args.num_classes, args)
