@@ -9,13 +9,13 @@ class CoTransformerEncoder(nn.Module):
         super(CoTransformerEncoder, self).__init__()
         # Transformer Encoder 1 for Visual features
         self.mhsa_1 = nn.MultiheadAttention(v_dim, num_heads, kdim=q_dim, vdim=q_dim, batch_first=True, dropout=drop_out)
-        self.ffw_1 = PositionwiseFeedForward(v_dim, hidden_dim, drop_out)
+        self.ffw_1 = PositionwiseFeedForward(v_dim, hidden_dim)
         self.addnorm_1_1 = AddNorm(v_dim, drop_out)
         self.addnorm_1_2 = AddNorm(v_dim, drop_out)
         
         # Transformer Encoder 2 for Question features
         self.mhsa_2 = nn.MultiheadAttention(q_dim, num_heads, kdim=v_dim, vdim=v_dim, batch_first=True, dropout=drop_out)
-        self.ffw_2 = PositionwiseFeedForward(q_dim, hidden_dim, drop_out)
+        self.ffw_2 = PositionwiseFeedForward(q_dim, hidden_dim)
         self.addnorm_2_1 = AddNorm(q_dim, drop_out)
         self.addnorm_2_2 = AddNorm(q_dim, drop_out)
             
