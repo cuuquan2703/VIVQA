@@ -37,6 +37,20 @@ class VisionTransformerModel(nn.Module):
         return output.last_hidden_state
 
 
+class ObjectDetectionModel(nn.Module):
+    def __init__(self, pretrained):
+        """Module for question embedding using pretrained BERT variants
+        """
+        super(ObjectDetectionModel, self).__init__()
+        self.config = AutoConfig.from_pretrained(pretrained)
+        self.model = AutoModel.from_pretrained(pretrained)
+        
+    def forward(self, features):  
+        output = self.model(**features)
+        probs = F.softmax(output['pred_logits'], dim=-1)
+        return output.last_hidden_state
+
+
 def initialize_backbone_model(model_name, is_training=True, use_imagenet_pretrained=True, model_path=None):
     # Initialize these variables which will be set in this if statement. Each of these
     #   variables is model specific.
@@ -114,6 +128,9 @@ def initialize_backbone_model(model_name, is_training=True, use_imagenet_pretrai
         # num_ftrs = model_ft.classifier.in_features
         # channels = [48, 96, 192, 384]
         # num_ftrs = 768 * 7 * 7
+    elif model_name == 'detr':
+        model_ft = ObjectDetectionModel(pretrained=use_imagenet_pretrained)
+
     else:
         print("Invalid model name, exiting...")
         exit()

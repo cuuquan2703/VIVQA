@@ -1,4 +1,5 @@
 import torch.nn as nn
+import torch.nn.functional as F
 from transformer.SubLayers import PositionwiseFeedForward, AddNorm
 
 
@@ -51,19 +52,19 @@ class CoTransformerBlock(nn.Module):
         v_out = self.transformer_1(v_out)
         q_out = self.transformer_2(q_out)
         return v_out, q_out
-
+    
 
 class FusionAttentionFeature(nn.Module):
     def __init__(self, args) -> None:
         super(FusionAttentionFeature, self).__init__()
         self.q_convert = nn.Sequential(*[
-            nn.Linear(args.q_dimn, args.f_mid_dim),
+            nn.Linear(args.q_dim, args.f_mid_dim),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(args.f_mid_dim, args.joint_dim)
         ])
         self.v_convert = nn.Sequential(*[
-            nn.Linear(args.v_dimn, args.f_mid_dim),
+            nn.Linear(args.v_dim, args.f_mid_dim),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(args.f_mid_dim, args.joint_dim)
@@ -81,19 +82,19 @@ class FusionAttentionFeature(nn.Module):
         out = self.layer_norm(v_converted + q_converted)
 
         return out
-    
+
 
 class FusionAttentionReduce(nn.Module):
     def __init__(self, args) -> None:
-        super(FusionAttentionFeature, self).__init__()
+        super(FusionAttentionReduce, self).__init__()
         self.q_convert = nn.Sequential(*[
-            nn.Linear(args.q_dimn, args.f_mid_dim),
+            nn.Linear(args.q_dim, args.f_mid_dim),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(args.f_mid_dim, args.joint_dim)
         ])
         self.v_convert = nn.Sequential(*[
-            nn.Linear(args.v_dimn, args.f_mid_dim),
+            nn.Linear(args.v_dim, args.f_mid_dim),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(args.f_mid_dim, args.joint_dim)
@@ -106,8 +107,13 @@ class FusionAttentionReduce(nn.Module):
         q_feat: [batch, q_len, q_dim]
         '''
         v_converted = self.v_convert(v_feat)
-        q_converted = self.q_convert(q_feat)
+        v_att = F.softmax(v_converted, dim=1)
+        v_atted = torch.sum(v_att * v_feat, dim=1)
 
-        out = self.layer_norm(v_converted + q_converted)
+        q_converted = self.q_convert(q_feat)
+        q_att = F.softmax(q_converted, dim=1)
+        q_atted = torch.sum(q_att * q_feat, dim=1)
+        
+        out = self.layer_norm(v_atted + q_atted)
 
         return out

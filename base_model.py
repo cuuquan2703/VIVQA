@@ -492,12 +492,13 @@ def build_CMSA(args):
 
 class CrossAttentionModel(nn.Module):
 
-    def __init__(self, q_emb, v_emb, co_att_layers, classifier, args) -> None:
+    def __init__(self, q_emb, v_emb, co_att_layers, fusion, classifier, args) -> None:
         super(CrossAttentionModel, self).__init__()
         self.q_emb = q_emb
         self.v_emb = v_emb
         self.classifier = classifier
         self.co_att_layers = co_att_layers
+        self.fusion = fusion
         self.flatten = nn.Flatten()
         self.args = args
         
@@ -515,12 +516,15 @@ class CrossAttentionModel(nn.Module):
         for co_att_layer in self.co_att_layers:
             q_emb, v_emb = co_att_layer(q_emb, v_emb)
         
-        v_emb = v_emb.mean(1, keepdim =True)
-        v_emb = v_emb.repeat_interleave(self.args.question_len, 1)
+        # v_emb = v_emb.mean(1, keepdim =True)
+        # v_emb = v_emb.repeat_interleave(self.args.question_len, 1)
         
-        out = q_emb * v_emb
-        out = out.mean(1, keepdim =True)
-        out = self.flatten(out)
+        if self.fusion:
+            out = self.fusion(v_emb, q_emb)
+        else:
+            out = q_emb * v_emb
+            out = out.mean(1, keepdim =True)
+            out = self.flatten(out)
         
         # out = out.permute((0, 2, 1))
         # out = out.mean(dim=-1)
@@ -545,7 +549,11 @@ def build_CrossAtt(args):
     for _ in range(args.n_coatt):
         coatt_layers.append(CoTransformerBlock(v_dim, q_dim, 8, 2048, args.dropout))
 
+    fusion = None
+    if args.object_dection:
+        fusion = FusionAttentionFeature(args)
+    
     classifier = SimpleClassifier(
         q_dim, q_dim * 2, args.num_classes, args)
 
-    return CrossAttentionModel(q_emb, v_emb, coatt_layers, classifier, args)
+    return CrossAttentionModel(q_emb, v_emb, coatt_layers, fusion, classifier, args)
