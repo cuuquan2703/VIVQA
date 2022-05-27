@@ -97,6 +97,7 @@ def get_arguments():
     parser.add_argument('--momentum', type=float, default=0.9)
     parser.add_argument('--warmup_steps', type=int, default=20)
     parser.add_argument('--label_smooth', type=float, default=0.0)
+    parser.add_argument('--threshold', type=float, default=0.7)
 
     parser.add_argument('--save_every', type=int, default=5)
     parser.add_argument('--log_every', type=int, default=25)
