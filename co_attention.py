@@ -1,3 +1,4 @@
+import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from transformer.SubLayers import PositionwiseFeedForward, AddNorm
@@ -57,18 +58,21 @@ class CoTransformerBlock(nn.Module):
 class FusionAttentionFeature(nn.Module):
     def __init__(self, args) -> None:
         super(FusionAttentionFeature, self).__init__()
+        
         self.q_convert = nn.Sequential(*[
             nn.Linear(args.q_dim, args.f_mid_dim),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(args.f_mid_dim, args.joint_dim)
         ])
+        
         self.v_convert = nn.Sequential(*[
             nn.Linear(args.v_dim, args.f_mid_dim),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(args.f_mid_dim, args.joint_dim)
         ])
+        
         self.layer_norm = nn.LayerNorm(args.joint_dim)
 
     def forward(self, v_feat, q_feat):

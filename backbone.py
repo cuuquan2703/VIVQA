@@ -26,7 +26,7 @@ def load_pretrained_model(model, model_path):
 
 class VisionTransformerModel(nn.Module):
     def __init__(self, pretrained):
-        """Module for question embedding using pretrained BERT variants
+        """Module for image embedding using pretrained Vision Transformers variants
         """
         super(VisionTransformerModel, self).__init__()
         self.config = AutoConfig.from_pretrained(pretrained)
@@ -38,17 +38,40 @@ class VisionTransformerModel(nn.Module):
 
 
 class ObjectDetectionModel(nn.Module):
-    def __init__(self, pretrained):
-        """Module for question embedding using pretrained BERT variants
+    def __init__(self, pretrained, threshold=0.7, max_objects=20):
+        """Module for image embedding extracted from object detection model
         """
         super(ObjectDetectionModel, self).__init__()
         self.config = AutoConfig.from_pretrained(pretrained)
         self.model = AutoModel.from_pretrained(pretrained)
+        self.threshold = threshold
+        self.max_objects = max_objects
         
     def forward(self, features):  
-        output = self.model(**features)
-        probs = F.softmax(output['pred_logits'], dim=-1)
-        return output.last_hidden_state
+        outputs = self.model(**features)
+        return self.post_process_output(outputs)
+    
+    def post_process_output(self, outputs):
+        b, k_obj, v_dim = outputs.last_hidden_state.shape  # (batch size, k objects, v_dim)
+        
+        # Calculate softmax logits
+        probs = F.softmax(outputs['logits'], dim=-1)[::-1]  # drop the last background class
+        max_probs = probs.max(dim=-1).values   # get the classes with max probability
+        
+        sorted_probs, indices = torch.sort(max_probs, dim=-1, descending=True)
+        
+        # Do fancy index selection to sort the features by logits descending
+        i = torch.arange(b).reshape(b, 1, 1) # shape = [b, 1, 1]
+        j = indices.reshape(b, k_obj, 1)      # shape = [b, k object, 1]
+        k = torch.arange(v_dim)                    # shape = [v_dim, ]
+
+        out_feats = outputs.last_hidden_state[i, j, k]  
+        
+        # Create mask to keep the classes with prob > threshold
+        mask = (sorted_probs >= self.threshold).unsqueeze(-1)
+        out_feats = out_feats * mask
+        
+        return out_feats[:, 0:self.max_objects, :]  # keep the top n objects of prob
 
 
 def initialize_backbone_model(model_name, is_training=True, use_imagenet_pretrained=True, model_path=None):

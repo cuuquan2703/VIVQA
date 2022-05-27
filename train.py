@@ -28,8 +28,13 @@ import utils
 def get_arguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('-gpu', type=str, default='0')
+    
+    # Choices of attention models
+    parser.add_argument('--model', type=str, default='CrossAtt', choices=['CMSA', 'CrossAtt'],
+                        help='the model we use')
 
     # Model setting
+    parser.add_argument('--object_detection',  action='store_true', default=False, help='Use Object Detection model?')
     parser.add_argument('--backbone', type=str, default='resnet34')
     parser.add_argument('--bert_type', type=str, default='phobert')
     parser.add_argument('--bert_pretrained', type=str, default='vinai/phobert-base')
@@ -38,15 +43,23 @@ def get_arguments():
     parser.add_argument('--data_dir', type=str, default='/content/dataset')
     parser.add_argument('--output', type=str, default='/content')
     
-    parser.add_argument('--v_dim', type=int, default=768)
-    # Joint representation C dimension
+    # Number of Co-Attention layers    
+    parser.add_argument('--n_coatt', type=int, default=2,
+                        help='dim of bert question features')   
+    
+    # Define dimensions
+    parser.add_argument('--v_dim', type=int, default=768,
+                        help='dim of image features')
     parser.add_argument('--q_dim', type=int, default=768,
                         help='dim of bert question features')
-    parser.add_argument('--n_coatt', type=int, default=2,
-                        help='dim of bert question features')
-    # Choices of attention models
-    parser.add_argument('--model', type=str, default='CMSA', choices=['CMSA', 'CrossAtt'],
-                        help='the model we use')
+    parser.add_argument('--f_mid_dim', type=int, default=1024,
+                        help='dim of middle layer of fusion layer')
+    parser.add_argument('--joint_dim', type=int, default=512,
+                        help='dim of joint features of fusion layer')
+    parser.add_argument('--hidden_dim', type=int, default=2048,
+                        help='dim of hidden layer of feed forward layers of transformers')
+    parser.add_argument('--num_heads', type=int, default=8,
+                        help='number of heads of transformers encoder')
     
     # BAN - Bilinear Attention Networks
     parser.add_argument('--gamma', type=int, default=2,
@@ -158,7 +171,9 @@ def main(args):
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     # optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     # scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=args.update_lr_every)
-    optimizer = optim.Adamax(model.parameters(), lr=args.init_lr, weight_decay=args.weight_decay)
+    optimizer = optim.Adamax(filter(lambda x: x.requires_grad, model.parameters()), 
+                             lr=args.init_lr, weight_decay=args.weight_decay)
+
     scheduler = get_linear_schedule_with_warmup(optimizer, 
                                                 num_warmup_steps=args.warmup_steps,
                                                 num_training_steps=args.nepochs + 1,

@@ -5,7 +5,7 @@ This code is developed based on Jin-Hwa Kim's repository (Bilinear Attention Net
 import torch
 import torch.nn as nn
 from attention import BiAttention, StackedAttention
-from co_attention import CoTransformerBlock
+from co_attention import CoTransformerBlock, FusionAttentionFeature
 from language_model import WordEmbedding, QuestionEmbedding, BertQuestionEmbedding, SelfAttention
 from classifier import SimpleClassifier
 from fc import FCNet
@@ -14,7 +14,7 @@ from counting import Counter
 from utils import tfidf_loading, generate_spatial_batch
 from simple_cnn import SimpleCNN
 from auto_encoder import Auto_Encoder_Model
-from backbone import initialize_backbone_model
+from backbone import initialize_backbone_model, ObjectDetectionModel
 # from multi_task import ResNet50, ResNet18, ResNet34
 from mc import MCNet
 from convert import Convert, GAPConvert
@@ -516,12 +516,12 @@ class CrossAttentionModel(nn.Module):
         for co_att_layer in self.co_att_layers:
             q_emb, v_emb = co_att_layer(q_emb, v_emb)
         
-        # v_emb = v_emb.mean(1, keepdim =True)
-        # v_emb = v_emb.repeat_interleave(self.args.question_len, 1)
-        
         if self.fusion:
             out = self.fusion(v_emb, q_emb)
         else:
+            v_emb = v_emb.mean(1, keepdim =True)
+            v_emb = v_emb.repeat_interleave(self.args.question_len, 1)
+            
             out = q_emb * v_emb
             out = out.mean(1, keepdim =True)
             out = self.flatten(out)
@@ -541,19 +541,23 @@ def build_CrossAtt(args):
     q_emb = BertQuestionEmbedding(args.bert_pretrained, args.device, use_mhsa=True)
     utils.set_parameters_requires_grad(q_emb, True)
 
-    print('Loading Image feature extractor...')
+    print('Loading image feature extractor...')
     v_dim = args.v_dim
-    v_emb = initialize_backbone_model(args.backbone, use_imagenet_pretrained=args.image_pretrained)[0]
+    if args.object_detection:
+        v_emb = ObjectDetectionModel(args.image_pretrained, args.threshold, args.question_len)
+        utils.set_parameters_requires_grad(v_emb, False)  # freeze Object Detection model
+    else:
+        v_emb = initialize_backbone_model(args.backbone, use_imagenet_pretrained=args.image_pretrained)[0]
 
     coatt_layers = nn.ModuleList([])
     for _ in range(args.n_coatt):
-        coatt_layers.append(CoTransformerBlock(v_dim, q_dim, 8, 2048, args.dropout))
+        coatt_layers.append(CoTransformerBlock(v_dim, q_dim, args.num_heads, args.hidden_dim, args.dropout))
 
     fusion = None
-    if args.object_dection:
+    if args.object_detection:
         fusion = FusionAttentionFeature(args)
-    
+
     classifier = SimpleClassifier(
-        q_dim, q_dim * 2, args.num_classes, args)
+        args.joint_dim, args.joint_dim * 2, args.num_classes, args)
 
     return CrossAttentionModel(q_emb, v_emb, coatt_layers, fusion, classifier, args)
