@@ -503,8 +503,8 @@ class CrossAttentionModel(nn.Module):
         self.args = args
         
     def forward(self, v, q):
-        q_emb = self.q_emb(q)
         v_emb = self.v_emb(v)
+        q_emb = self.q_emb(q)
         
         # q_emb = q_emb[:, 0, :]
         # v_emb = v_emb[:, 0, :]
@@ -514,7 +514,7 @@ class CrossAttentionModel(nn.Module):
         # v_emb = v_emb.repeat_interleave(self.args.question_len, 1)
         
         for co_att_layer in self.co_att_layers:
-            q_emb, v_emb = co_att_layer(q_emb, v_emb)
+            v_emb, q_emb = co_att_layer(v_emb, q_emb)
         
         if self.fusion:
             out = self.fusion(v_emb, q_emb)

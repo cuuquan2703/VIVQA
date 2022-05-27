@@ -59,15 +59,15 @@ class FusionAttentionFeature(nn.Module):
     def __init__(self, args) -> None:
         super(FusionAttentionFeature, self).__init__()
         
-        self.q_convert = nn.Sequential(*[
-            nn.Linear(args.q_dim, args.f_mid_dim),
+        self.v_convert = nn.Sequential(*[
+            nn.Linear(args.v_dim, args.f_mid_dim),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(args.f_mid_dim, args.joint_dim)
         ])
-        
-        self.v_convert = nn.Sequential(*[
-            nn.Linear(args.v_dim, args.f_mid_dim),
+                
+        self.q_convert = nn.Sequential(*[
+            nn.Linear(args.q_dim, args.f_mid_dim),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(args.f_mid_dim, args.joint_dim)
