@@ -41,7 +41,7 @@ class CoTransformerBlock(nn.Module):
     def __init__(self, v_dim, q_dim, num_head_trfm=12, hidden_size=2048, drop_out=0.1) -> None:
         super(CoTransformerBlock, self).__init__()
         self.co_trm_encoder = CoTransformerEncoder(q_dim, v_dim, hidden_size, num_head_trfm, drop_out)
-        self.transformer_1 = nn.TransformerEncoderLayer(q_dim, nhead=num_head_trfm, dim_feedforward=hidden_size, dropout=drop_out, batch_first=True)
+        self.transformer_1 = nn.TransformerEncoderLayer(v_dim, nhead=num_head_trfm, dim_feedforward=hidden_size, dropout=drop_out, batch_first=True)
         self.transformer_2 = nn.TransformerEncoderLayer(q_dim, nhead=num_head_trfm, dim_feedforward=hidden_size, dropout=drop_out, batch_first=True)
         
     def forward(self, v, q):
