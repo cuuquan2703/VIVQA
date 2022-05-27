@@ -3,7 +3,8 @@ import torch.nn as nn
 from torchvision import models
 import torch.nn.functional as F
 import utils
-from transformers import AutoFeatureExtractor, AutoModel, AutoConfig, DeiTFeatureExtractor, DeiTModel
+from transformers import AutoFeatureExtractor, AutoModel, AutoConfig, DeiTFeatureExtractor, DeiTModel,\
+                         DetrForObjectDetection
 
 class CustomDenseNet121(models.densenet.DenseNet):
     def __init__(self, **kwargs):
@@ -43,7 +44,7 @@ class ObjectDetectionModel(nn.Module):
         """
         super(ObjectDetectionModel, self).__init__()
         self.config = AutoConfig.from_pretrained(pretrained)
-        self.model = AutoModel.from_pretrained(pretrained)
+        self.model = DetrForObjectDetection.from_pretrained(pretrained)
         self.threshold = threshold
         self.max_objects = max_objects
         
@@ -55,7 +56,7 @@ class ObjectDetectionModel(nn.Module):
         b, k_obj, v_dim = outputs.last_hidden_state.shape  # (batch size, k objects, v_dim)
         
         # Calculate softmax logits
-        probs = F.softmax(outputs['logits'], dim=-1)[::-1]  # drop the last background class
+        probs = F.softmax(outputs.logits, dim=-1)[::-1]  # drop the last background class
         max_probs = probs.max(dim=-1).values   # get the classes with max probability
         
         sorted_probs, indices = torch.sort(max_probs, dim=-1, descending=True)
