@@ -523,8 +523,9 @@ class CrossAttentionModel(nn.Module):
             v_emb = v_emb.repeat_interleave(self.args.question_len, 1)
             
             out = q_emb * v_emb
-            out = out.mean(1, keepdim =True)
-            out = self.flatten(out)
+        
+        out = out.mean(1, keepdim =True)
+        out = self.flatten(out)
         
         # out = out.permute((0, 2, 1))
         # out = out.mean(dim=-1)
