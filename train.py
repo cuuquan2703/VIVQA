@@ -246,8 +246,6 @@ def main(args):
                     output = model.forward(img, question)
                     output = model.classify(output)
 
-                    print(output.shape)
-                    print(label.shape)
                     # Compute the loss and accuracy
                     loss = loss_fn(output, label)
                     
