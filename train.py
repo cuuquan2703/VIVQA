@@ -6,6 +6,7 @@ import os
 from itertools import chain
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 
 import torch
 from torchvision import transforms
@@ -222,7 +223,6 @@ def main(args):
         is_save_best_model = False
         
         for phase in ['train', 'test']:
-            print('+ Training:' if phase == 'train' else '+ Validation:')
     
             with torch.set_grad_enabled(phase == 'train'):        
                 # Make sure gradient tracking is on if in training, and do a pass over the data
@@ -230,47 +230,54 @@ def main(args):
                 
                 batch_loss, batch_acc = 0., 0.
 
+                count = 0   # count no. of data points
                 # Loop over training data
-                for i, data in enumerate(dataloaders[phase]):
-                    # Every data instance is an input + img_label pair
-                    question, img, label = data['question'], data['image'], data['label']
-                    question, img, label = question.to(device), img.to(device), label.to(device)
-                    # one_hot_label = torch.nn.functional.one_hot(label, args.num_classes).float()
+                with tqdm(dataloaders[phase], unit=' batch') as tq_data:
+                    for i, data in enumerate(tq_data):
+                        
+                        tq_data.set_description("Training: " if phase=='train' else "Validation: ")
+                        
+                        # Every data instance is an input + img_label pair
+                        question, img, label = data['question'], data['image'], data['label']
+                        question, img, label = question.to(device), img.to(device), label.to(device)
+                        # one_hot_label = torch.nn.functional.one_hot(label, args.num_classes).float()
 
-                    batch_size = label.size()[0]
-                    
-                    # Zero your gradients for every batch!
-                    optimizer.zero_grad()
+                        count += label.size()[0]
+                        
+                        # Zero your gradients for every batch!
+                        optimizer.zero_grad()
 
-                    # Make predictions for this batch
-                    output = model.forward(img, question)
-                    output = model.classify(output)
+                        # Make predictions for this batch
+                        output = model.forward(img, question)
+                        output = model.classify(output)
 
-                    # Compute the loss and accuracy
-                    loss = loss_fn(output, label)
-                    
-                    batch_loss += loss.item()
-                    
-                    # Calculate accuracy for classification task
-                    acc = utils.calc_acc(output, label)
-                    batch_acc += acc
+                        # Compute the loss and accuracy
+                        loss = loss_fn(output, label)
+                        
+                        batch_loss += loss.item()
+                        
+                        # Calculate accuracy for classification task
+                        acc = utils.calc_acc(output, label)
+                        batch_acc += acc
+
+                        if phase == 'train':
+                            # Backward model to compute its gradients
+                            # optimizer.zero_grad()
+                            loss.backward()
+
+                            # Adjust learning weights
+                            optimizer.step()
+                        
+                        tq_data.set_postfix_str(s='loss = %.4f, accuracy = %.4f' % (batch_loss / count, batch_acc / (i+1)))
 
                     if phase == 'train':
-                        # Backward model to compute its gradients
-                        # optimizer.zero_grad()
-                        loss.backward()
-
-                        # Adjust learning weights
-                        optimizer.step()
-
-                if phase == 'train':
-                    # adjust learning rate
-                    scheduler.step()
-                
+                        # adjust learning rate
+                        scheduler.step()
+                    
             batch_loss /= data_size[phase]
             batch_acc /= len(dataloaders[phase])
             
-            print(f'{phase} loss: %.4f, {phase} acc: %.4f' % (batch_loss, batch_acc))
+            print(f'  + {phase} loss: %.4f, {phase} acc: %.4f' % (batch_loss, batch_acc))
             
             loggings = { **loggings,
                 f'{phase}_loss': float(batch_loss),
@@ -279,7 +286,7 @@ def main(args):
             
             # Save best model
             if phase == 'test' and batch_acc > best_val_acc:
-                print('Saving this best model...')
+                print('===> Saving this best model...')
                 is_save_best_model = True
                 best_val_acc = batch_acc
                 best_model = copy.deepcopy(model.state_dict())
