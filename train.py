@@ -6,7 +6,7 @@ import os
 from itertools import chain
 import pandas as pd
 import numpy as np
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 
 import torch
 from torchvision import transforms
@@ -269,6 +269,7 @@ def main(args):
                             optimizer.step()
                         
                         tq_data.set_postfix_str(s='loss = %.4f, accuracy = %.4f' % (batch_loss / count, batch_acc / (i+1)))
+                        tq_data.update()
 
                     if phase == 'train':
                         # adjust learning rate
