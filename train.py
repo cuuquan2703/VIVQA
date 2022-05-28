@@ -232,7 +232,7 @@ def main(args):
 
                 count = 0   # count no. of data points
                 # Loop over training data
-                with tqdm(dataloaders[phase], unit=' batch') as tq_data:
+                with tqdm(dataloaders[phase], unit=' batch', total=len(dataloaders[phase])) as tq_data:
                     for i, data in enumerate(tq_data):
                         
                         tq_data.set_description("Training: " if phase=='train' else "Validation: ")
