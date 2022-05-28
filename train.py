@@ -6,7 +6,7 @@ import os
 from itertools import chain
 import pandas as pd
 import numpy as np
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 
 import torch
 from torchvision import transforms
