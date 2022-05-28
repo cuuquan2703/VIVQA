@@ -3,8 +3,8 @@ import torch.nn as nn
 from torchvision import models
 import torch.nn.functional as F
 import utils
-from transformers import AutoFeatureExtractor, AutoModel, AutoConfig, DeiTFeatureExtractor, DeiTModel,\
-                         DetrForObjectDetection
+from transformers import AutoFeatureExtractor, AutoModel, AutoConfig, DeiTModel,\
+                         DetrForObjectDetection, YolosForObjectDetection
 
 class CustomDenseNet121(models.densenet.DenseNet):
     def __init__(self, **kwargs):
@@ -44,7 +44,7 @@ class ObjectDetectionModel(nn.Module):
         """
         super(ObjectDetectionModel, self).__init__()
         self.config = AutoConfig.from_pretrained(pretrained)
-        self.model = DetrForObjectDetection.from_pretrained(pretrained)
+        self.model = YolosForObjectDetection.from_pretrained(pretrained)
         self.threshold = threshold
         self.max_objects = max_objects
         
@@ -66,13 +66,13 @@ class ObjectDetectionModel(nn.Module):
         j = indices.reshape(b, k_obj, 1)      # shape = [b, k object, 1]
         k = torch.arange(v_dim)                    # shape = [v_dim, ]
 
-        out_feats = outputs.last_hidden_state[i, j, k]  
+        outputs = outputs.last_hidden_state[i, j, k]  
         
         # Create mask to keep the classes with prob > threshold
         mask = (sorted_probs >= self.threshold).unsqueeze(-1)
-        out_feats = out_feats * mask
+        outputs = outputs * mask
         
-        return out_feats[:, 0:self.max_objects, :]  # keep the top n objects of prob
+        return outputs[:, 0:self.max_objects, :]  # keep the top n objects of prob
 
 
 def initialize_backbone_model(model_name, is_training=True, use_imagenet_pretrained=True, model_path=None):

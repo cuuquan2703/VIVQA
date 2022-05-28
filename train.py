@@ -23,7 +23,9 @@ import base_model
 
 from dataloaders import custom_transforms as trforms
 from dataloaders.vivqa_dataset import ViVQADataset, VTCollator
-from transformers import ViTFeatureExtractor, DetrFeatureExtractor, DeiTFeatureExtractor, AutoTokenizer, get_linear_schedule_with_warmup
+from transformers import ViTFeatureExtractor, DetrFeatureExtractor, DeiTFeatureExtractor, \
+                         AutoTokenizer, get_linear_schedule_with_warmup, \
+                         YolosFeatureExtractor, YolosModel, YolosForObjectDetection
 import utils
 
 
@@ -145,7 +147,7 @@ def main(args):
     # }
     tokenizer = AutoTokenizer.from_pretrained(args.bert_pretrained)
     if args.object_detection:
-        feature_extractor = DetrFeatureExtractor(do_resize=True, size=args.input_size, 
+        feature_extractor = YolosFeatureExtractor(do_resize=True, size=args.input_size, 
                                                 do_normalize=True, 
                                                 image_mean=(0.485, 0.456, 0.406), image_std=(0.229, 0.224, 0.225)
                                                 ).from_pretrained(args.image_pretrained)
@@ -179,7 +181,8 @@ def main(args):
     model.to(device)
     
     if args.print_summary:
-        print(summary(model, (args.batch_size, 3, args.input_size, args.input_size)))
+        print(summary(model, input_data=[(args.batch_size, 3, args.input_size, args.input_size),
+                                         (args.batch_size, args.question_len, args)]))
         return model
     
     # Initialize optimizer algorithm
