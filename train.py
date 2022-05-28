@@ -7,6 +7,7 @@ from itertools import chain
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
+from torchinfo import summary
 
 import torch
 from torchvision import transforms
@@ -100,6 +101,8 @@ def get_arguments():
     parser.add_argument('--label_smooth', type=float, default=0.0)
     parser.add_argument('--threshold', type=float, default=0.7)
 
+    parser.add_argument('--print_summary', action='store_true', default=False, help='Print model summary?')
+
     parser.add_argument('--save_every', type=int, default=5)
     parser.add_argument('--log_every', type=int, default=25)
     parser.add_argument('--emb_init', type=str, default='biowordvec', choices=['glove', 'biowordvec', 'biosentvec'])
@@ -174,6 +177,10 @@ def main(args):
     constructor = 'build_%s' % args.model
     model = getattr(base_model, constructor)(args)
     model.to(device)
+    
+    if args.print_summary:
+        print(summary(model, (args.batch_size, 3, args.input_size, args.input_size)))
+        return model
     
     # Initialize optimizer algorithm
     # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
@@ -268,7 +275,7 @@ def main(args):
                             # Adjust learning weights
                             optimizer.step()
                         
-                        tq_data.set_postfix_str(s='loss = %.4f, accuracy = %.4f' % (batch_loss / count, batch_acc / (i+1)))
+                        tq_data.set_postfix_str(s='loss=%.4f, accuracy=%.4f' % (batch_loss / count, batch_acc / (i+1)))
                         tq_data.update()
 
                     if phase == 'train':
@@ -277,9 +284,7 @@ def main(args):
                     
             batch_loss /= data_size[phase]
             batch_acc /= len(dataloaders[phase])
-            
-            print(f'  + {phase} loss: %.4f, {phase} acc: %.4f' % (batch_loss, batch_acc))
-            
+                        
             loggings = { **loggings,
                 f'{phase}_loss': float(batch_loss),
                 f'{phase}_acc': float(batch_acc),
