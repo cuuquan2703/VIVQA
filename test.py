@@ -58,6 +58,10 @@ def get_arguments():
     parser.add_argument('--model', type=str, default='CMSA', choices=['CMSA', 'CrossAtt'],
                         help='the model we use')
     
+    # Number of Co-Attention layers    
+    parser.add_argument('--n_coatt', type=int, default=2,
+                        help='dim of bert question features')   
+    
     # BAN - Bilinear Attention Networks
     parser.add_argument('--gamma', type=int, default=2,
                         help='glimpse in Bilinear Attention Networks')
