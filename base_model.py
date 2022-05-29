@@ -11,7 +11,7 @@ from classifier import SimpleClassifier
 from fc import FCNet
 from bc import BCNet
 from counting import Counter
-from utils import tfidf_loading, generate_spatial_batch
+# from utils import tfidf_loading, generate_spatial_batch
 from simple_cnn import SimpleCNN
 from auto_encoder import Auto_Encoder_Model
 from backbone import initialize_backbone_model, ObjectDetectionModel
