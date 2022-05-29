@@ -30,6 +30,7 @@ def get_arguments():
     parser.add_argument('-gpu', type=str, default='0')
 
     # Model setting
+    parser.add_argument('--object_detection',  action='store_true', default=False, help='Use Object Detection model?')
     parser.add_argument('--backbone', type=str, default='vit')
     parser.add_argument('--bert_type', type=str, default='phobert')
     parser.add_argument('--bert_pretrained', type=str, default=None)
@@ -39,12 +40,20 @@ def get_arguments():
     parser.add_argument('--input', type=str, default='/content')
     parser.add_argument('--output', type=str, default='/content')
     
-    parser.add_argument('--v_dim', type=int, default=768)
-    # Joint representation C dimension
+     # Define dimensions
+    parser.add_argument('--v_dim', type=int, default=768,
+                        help='dim of image features')
     parser.add_argument('--q_dim', type=int, default=768,
                         help='dim of bert question features')
-    parser.add_argument('--n_coatt', type=int, default=2,
-                        help='dim of bert question features')
+    parser.add_argument('--f_mid_dim', type=int, default=1024,
+                        help='dim of middle layer of fusion layer')
+    parser.add_argument('--joint_dim', type=int, default=512,
+                        help='dim of joint features of fusion layer')
+    parser.add_argument('--hidden_dim', type=int, default=2048,
+                        help='dim of hidden layer of feed forward layers of transformers')
+    parser.add_argument('--num_heads', type=int, default=8,
+                        help='number of heads of transformers encoder')
+
     # Choices of attention models
     parser.add_argument('--model', type=str, default='CMSA', choices=['CMSA', 'CrossAtt'],
                         help='the model we use')
