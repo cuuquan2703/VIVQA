@@ -211,14 +211,14 @@ def create_glove_embedding_init(idx2word, glove_file):
         weights[idx] = word2emb[word]
     return weights, word2emb
 
-def create_biowordvec_embedding_init(idx2word, bio_bin_file):
-    emb_dim = 200
-    model = fasttext.load_model(bio_bin_file)
-    print('model successfully loaded')
-    weights = np.zeros((len(idx2word), emb_dim), dtype=np.float32)
-    for idx, word in enumerate(idx2word):
-        weights[idx] = model.get_word_vector(word)
-    return weights
+# def create_biowordvec_embedding_init(idx2word, bio_bin_file):
+#     emb_dim = 200
+#     model = fasttext.load_model(bio_bin_file)
+#     print('model successfully loaded')
+#     weights = np.zeros((len(idx2word), emb_dim), dtype=np.float32)
+#     for idx, word in enumerate(idx2word):
+#         weights[idx] = model.get_word_vector(word)
+#     return weights
 
 # --------------------FAIRSEQ functions---------------------------
 def move_to_cuda(sample):
@@ -295,41 +295,6 @@ def time_since(since, percent):
     elapsed_seconds = seconds / (percent)
     rest_seconds = elapsed_seconds - seconds
     return '%s (- %s)' % (as_minutes(seconds), as_minutes(rest_seconds))
-
-def tfidf_loading(use_tfidf, w_emb, args):
-    if use_tfidf:
-        if args.use_RAD:
-            dict = dataset_RAD.Dictionary.load_from_file(os.path.join(args.RAD_dir, 'dictionary.pkl'))
-
-        # load extracted tfidf and weights from file for saving loading time
-        if args.use_RAD:
-            if args.emb_init == 'glove':
-                if os.path.isfile(os.path.join(args.RAD_dir, 'embed_tfidf_weights.pkl')) == True:
-                    print("Loading embedding tfidf and weights from file")
-                    with open(os.path.join(args.RAD_dir ,'embed_tfidf_weights.pkl'), 'rb') as f:
-                        w_emb = torch.load(f)
-                    print("Load embedding tfidf and weights from file successfully")
-                else:
-                    print("Embedding tfidf and weights haven't been saving before")
-                    tfidf, weights = dataset_RAD.tfidf_from_questions(['train'], None, dict)
-                    w_emb.init_embedding(os.path.join(args.RAD_dir, 'glove6b_init_300d.npy'), tfidf, weights)
-                    with open(os.path.join(args.RAD_dir ,'embed_tfidf_weights.pkl'), 'wb') as f:
-                        torch.save(w_emb, f)
-                    print("Saving embedding with tfidf and weights successfully")
-            elif args.emb_init == 'biowordvec':
-                if os.path.isfile(os.path.join(args.RAD_dir, 'embed_tfidf_weights_biowordvec.pkl')) == True:
-                    print("Loading embedding tfidf and weights (biowordvec) from file")
-                    with open(os.path.join(args.RAD_dir ,'embed_tfidf_weights_biowordvec.pkl'), 'rb') as f:
-                        w_emb = torch.load(f)
-                    print("Load embedding tfidf and weights (biowordvec) from file successfully")
-                else:
-                    print("Embedding tfidf and weights (biowordvec) haven't been saving before")
-                    tfidf, weights = dataset_RAD.tfidf_from_questions(['train'], args, dict)
-                    w_emb.init_embedding(os.path.join(args.RAD_dir, 'biowordvec_init_200d.npy'), tfidf, weights)
-                    with open(os.path.join(args.RAD_dir ,'embed_tfidf_weights_biowordvec.pkl'), 'wb') as f:
-                        torch.save(w_emb, f)
-                    print("Saving embedding with tfidf and weights (biowordvec) successfully")
-    return w_emb
 
 def generate_spatial_batch(N, featmap_H, featmap_W):
     spatial_batch_val = np.zeros((N, 8, featmap_H, featmap_W), dtype=np.float32)
