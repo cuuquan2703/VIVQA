@@ -568,14 +568,10 @@ class GuidedAttentionModel(nn.Module):
     def __init__(self, q_emb, v_embs, visual_guided_atts, visual_reduces, q_guided_att, classifier, args):
         super(GuidedAttentionModel, self).__init__()
         self.q_emb = q_emb
-        self.v_cnn_emb = v_embs[0]
-        self.v_vit_emb = v_embs[1]
-
-        self.visual_cnn_guided_att = visual_guided_atts[0]
-        self.visual_vit_guided_att = visual_guided_atts[1]
-
-        self.visual_cnn_reduced = visual_reduces[0]
-        self.visual_vit_reduced = visual_reduces[1]
+        
+        self.v_embs = nn.ModuleList(v_embs)
+        self.visual_guided_atts = nn.ModuleList(visual_guided_atts)
+        self.visual_reduces = nn.ModuleList(visual_reduces)
 
         self.q_guided_att = q_guided_att
         self.classifier = classifier
