@@ -60,7 +60,7 @@ def get_arguments():
                         help='dim of middle layer of fusion layer')
     parser.add_argument('--joint_dim', type=int, default=512,
                         help='dim of joint features of fusion layer')
-    parser.add_argument('--glimpses', type=int, default=1,
+    parser.add_argument('--glimpse', type=int, default=1,
                         help='number of glimpse for the attention reduction')
 
     # Multihead self-attention config
