@@ -48,10 +48,6 @@ def get_arguments():
     parser.add_argument('--data_dir', type=str, default='/content/dataset')
     parser.add_argument('--output', type=str, default='/content')
     
-    # Number of Co-Attention layers    
-    parser.add_argument('--n_coatt', type=int, default=2,
-                        help='dim of bert question features')   
-    
     # Define dimensions
     parser.add_argument('--v_vit_dim', type=int, default=768,
                         help='dim of image features')
@@ -63,6 +59,8 @@ def get_arguments():
                         help='dim of middle layer of fusion layer')
     parser.add_argument('--joint_dim', type=int, default=512,
                         help='dim of joint features of fusion layer')
+    parser.add_argument('--glimpses', type=int, default=1,
+                        help='number of glimpse for the attention reduction')
 
     # Multihead self-attention config
     parser.add_argument('--hidden_dim', type=int, default=2048,

@@ -623,7 +623,7 @@ def build_GuidedAtt(args):
 
     question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim + v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
 
-     classifier = SimpleClassifier(
+    classifier = SimpleClassifier(
         args.joint_dim, args.joint_dim * 2, args.num_classes, args)
 
     return GuidedAttentionModel(
