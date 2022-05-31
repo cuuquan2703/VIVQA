@@ -38,6 +38,7 @@ def get_arguments():
                         help='the model we use')
 
     # Model setting
+    parser.add_argument('--object_detection',  action='store_true', default=False, help='Use Object Detection model?')
     parser.add_argument('--vit_backbone', type=str, default='vit')
     parser.add_argument('--vit_image_pretrained', type=str, default='google/vit-base-patch16-224-in21k')
     parser.add_argument('--cnn_backbone', type=str, default='resnet34')
