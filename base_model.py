@@ -615,8 +615,8 @@ def build_GuidedAtt(args):
     v_cnn_dim = args.v_cnn_dim
     v_cnn_emb = initialize_backbone_model(args.cnn_backbone, use_imagenet_pretrained=args.cnn_image_pretrained)[0]
 
-    visual_vit_guided_att = GuidedTransformerEncoder(v_vit_dim, q_emb, args.num_heads, args.hidden_dim, args.dropout)
-    visual_cnn_guided_att = GuidedTransformerEncoder(v_cnn_dim, q_emb, args.num_heads, args.hidden_dim, args.dropout)
+    visual_vit_guided_att = GuidedTransformerEncoder(v_vit_dim, q_dim, args.num_heads, args.hidden_dim, args.dropout)
+    visual_cnn_guided_att = GuidedTransformerEncoder(v_cnn_dim, q_dim, args.num_heads, args.hidden_dim, args.dropout)
 
     visual_vit_reduced = AttentionReduce(v_vit_dim, v_vit_dim // 2, args.glimpse)
     visual_cnn_reduced = AttentionReduce(v_cnn_dim, v_cnn_dim // 2, args.glimpse)
