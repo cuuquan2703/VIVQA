@@ -583,7 +583,7 @@ class GuidedAttentionModel(nn.Module):
         for v_emb, visual_guided_att, visual_reduce in zip(self.v_embs, self.visual_guided_atts, self.visual_reduces):
             v_embed = v_emb(v)
             v_guided = visual_guided_att(v_embed, q_feat)
-            v_feats.append(visual_reduce(v_guided))
+            v_feats.append(visual_reduce(v_guided, v_embed))
         
         v_joint_feat = torch.cat(v_feats, dim=1)
 
