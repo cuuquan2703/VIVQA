@@ -575,6 +575,7 @@ class GuidedAttentionModel(nn.Module):
 
         self.q_guided_att = q_guided_att
         self.classifier = classifier
+        self.flatten = nn.Flatten()
     
     def forward(self, v, q):
         q_feat = self.q_emb(q)
@@ -589,9 +590,12 @@ class GuidedAttentionModel(nn.Module):
 
         v_joint_feat = v_joint_feat.unsqueeze(1)
 
-        q_feat = self.q_guided_att(q_feat, v_joint_feat)
+        out = self.q_guided_att(q_feat, v_joint_feat)
+        
+        out = out.mean(1, keepdim =True)
+        out = self.flatten(out)
 
-        return q_feat
+        return out
     
     def classify(self, x):
         return self.classifier(x)
