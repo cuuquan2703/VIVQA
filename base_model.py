@@ -5,7 +5,7 @@ This code is developed based on Jin-Hwa Kim's repository (Bilinear Attention Net
 import torch
 import torch.nn as nn
 from attention import BiAttention, StackedAttention
-from co_attention import CoTransformerBlock, FusionAttentionFeature
+from co_attention import CoTransformerBlock, FusionAttentionFeature, GuidedTransformerEncoder, AttentionReduce
 from language_model import WordEmbedding, QuestionEmbedding, BertQuestionEmbedding, SelfAttention
 from classifier import SimpleClassifier
 from fc import FCNet
@@ -537,7 +537,7 @@ class CrossAttentionModel(nn.Module):
     
 
 def build_CrossAtt(args):
-    print('Use BERT as question embedding')
+    print('Use BERT as question embedding...')
     q_dim = args.q_dim
     q_emb = BertQuestionEmbedding(args.bert_pretrained, args.device, use_mhsa=True)
     utils.set_parameters_requires_grad(q_emb, True)
@@ -562,3 +562,77 @@ def build_CrossAtt(args):
         args.joint_dim, args.joint_dim * 2, args.num_classes, args)
 
     return CrossAttentionModel(q_emb, v_emb, coatt_layers, fusion, classifier, args)
+
+
+class GuidedAttentionModel(nn.Module):
+    def __init__(self, q_emb, v_embs, visual_guided_atts, visual_reduces, q_guided_att, classifier, args):
+        super(GuidedAttentionModel, self).__init__()
+        self.q_emb = q_emb
+        self.v_cnn_emb = v_embs[0]
+        self.v_vit_emb = v_embs[1]
+
+        self.visual_cnn_guided_att = visual_guided_atts[0]
+        self.visual_vit_guided_att = visual_guided_atts[1]
+
+        self.visual_cnn_reduced = visual_reduces[0]
+        self.visual_vit_reduced = visual_reduces[1]
+
+        self.q_guided_att = q_guided_att
+        self.classifier = classifier
+    
+    def forward(self, v, q):
+        q_feat = self.q_emb(q)
+
+        v_feats = []
+        for v_emb, visual_guided_att, visual_reduce in zip(self.v_embs, self.visual_guided_atts, self.visual_reduces):
+            v_embed = v_emb(v)
+            v_guided = visual_guided_att(v_embed, q_feat)
+            v_feats.append(visual_reduce(v_guided))
+        
+        v_joint_feat = torch.cat(v_feats, dim=1)
+
+        v_joint_feat = v_joint_feat.unsqueeze(1)
+
+        q_feat = self.q_guided_att(q_feat, v_joint_feat)
+
+        return q_feat
+    
+    def classify(self, x):
+        return self.classifier(x)
+
+
+def build_GuidedAtt(args):
+    print('Use BERT as question embedding...')
+    q_dim = args.q_dim
+    q_emb = BertQuestionEmbedding(args.bert_pretrained, args.device, use_mhsa=True)
+    utils.set_parameters_requires_grad(q_emb, True)
+
+    print('Loading Vision Transformer feature extractor...')
+    v_vit_dim = args.v_vit_dim
+    v_vit_emb = initialize_backbone_model(args.vit_backbone, use_imagenet_pretrained=args.vit_image_pretrained)[0]
+
+    print('Loading CNN feature extractor...')
+    v_cnn_dim = args.v_cnn_dim
+    v_cnn_emb = initialize_backbone_model(args.cnn_backbone, use_imagenet_pretrained=args.cnn_image_pretrained)[0]
+
+    visual_vit_guided_att = GuidedTransformerEncoder(v_vit_dim, q_emb, args.num_heads, args.hidden_dim, args.dropout)
+    visual_cnn_guided_att = GuidedTransformerEncoder(v_cnn_dim, q_emb, args.num_heads, args.hidden_dim, args.dropout)
+
+    visual_vit_reduced = AttentionReduce(v_vit_dim, v_vit_dim // 2, args.glimpse)
+    visual_cnn_reduced = AttentionReduce(v_cnn_dim, v_cnn_dim // 2, args.glimpse)
+
+    question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim + v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
+
+     classifier = SimpleClassifier(
+        args.joint_dim, args.joint_dim * 2, args.num_classes, args)
+
+    return GuidedAttentionModel(
+        q_emb, 
+        [v_cnn_emb, v_vit_emb], 
+        [visual_cnn_guided_att, visual_vit_guided_att],
+        [visual_cnn_reduced, visual_vit_reduced],
+        question_guided_att,
+        classifier,
+        args
+    )
+    

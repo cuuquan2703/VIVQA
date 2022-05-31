@@ -1,3 +1,4 @@
+from timm import create_model
 import torch
 import torch.nn as nn
 from torchvision import models
@@ -18,7 +19,19 @@ class CustomDenseNet121(models.densenet.DenseNet):
         # out = torch.flatten(out, 1)
         # out = self.classifier(out)
         return out
-        
+
+
+class CustomCNNModel(nn.Module):
+    def __init__(self, model):
+        super(CustomCNNModel, self).__init__()
+        self.model = model
+
+    def forward(self, x):
+        x = x['pixel_values']
+        out = self.model(x)  # [batch, dim, w, h]
+        b, dim, w, h = out.shape
+        return out.view((b, dim, -1)).permute((0, 2, 1))
+
 
 def load_pretrained_model(model, model_path):
     model.load_state_dict(torch.load(model_path))
@@ -88,11 +101,11 @@ def initialize_backbone_model(model_name, is_training=True, use_imagenet_pretrai
             layers[name] = output.detach()
         return hook
 
-    if model_name == "resnet":
-        """ Resnet18
+    if "resnet" in model_name:
+        """ ResNet
         """
-        model_ft = models.resnet18(pretrained=use_imagenet_pretrained)
-        num_ftrs = model_ft.fc.in_features
+        model = create_model(model_name, pretrained=use_imagenet_pretrained, num_classes=0, global_pool='')
+        model_ft = CustomCNNModel(model)
         # model_ft.fc = nn.Linear(num_ftrs, num_classes)
 
     elif model_name == "vgg":

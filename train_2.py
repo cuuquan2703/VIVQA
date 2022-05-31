@@ -34,15 +34,16 @@ def get_arguments():
     parser.add_argument('-gpu', type=str, default='0')
     
     # Choices of attention models
-    parser.add_argument('--model', type=str, default='CrossAtt', choices=['CMSA', 'CrossAtt'],
+    parser.add_argument('--model', type=str, default='CrossAtt', choices=['CMSA', 'CrossAtt', 'GuidedAtt'],
                         help='the model we use')
 
     # Model setting
-    parser.add_argument('--object_detection',  action='store_true', default=False, help='Use Object Detection model?')
-    parser.add_argument('--backbone', type=str, default='resnet34')
+    parser.add_argument('--vit_backbone', type=str, default='vit')
+    parser.add_argument('--vit_image_pretrained', type=str, default='google/vit-base-patch16-224-in21k')
+    parser.add_argument('--cnn_backbone', type=str, default='resnet34')
+    parser.add_argument('--cnn_image_pretrained', type=str, default='google/vit-base-patch16-224-in21k')
     parser.add_argument('--bert_type', type=str, default='phobert')
     parser.add_argument('--bert_pretrained', type=str, default='vinai/phobert-base')
-    parser.add_argument('--image_pretrained', type=str, default='google/vit-base-patch16-224-in21k')
     parser.add_argument('--input_size', type=int, default=224)
     parser.add_argument('--data_dir', type=str, default='/content/dataset')
     parser.add_argument('--output', type=str, default='/content')
@@ -52,7 +53,9 @@ def get_arguments():
                         help='dim of bert question features')   
     
     # Define dimensions
-    parser.add_argument('--v_dim', type=int, default=768,
+    parser.add_argument('--v_vit_dim', type=int, default=768,
+                        help='dim of image features')
+    parser.add_argument('--v_cnn_dim', type=int, default=768,
                         help='dim of image features')
     parser.add_argument('--q_dim', type=int, default=768,
                         help='dim of bert question features')
@@ -150,9 +153,9 @@ def main(args):
     tokenizer = AutoTokenizer.from_pretrained(args.bert_pretrained)
     if args.object_detection:
         feature_extractor = YolosFeatureExtractor(do_resize=True, size=args.input_size, 
-                                                  do_normalize=True, 
-                                                  image_mean=(0.485, 0.456, 0.406), image_std=(0.229, 0.224, 0.225)
-                                                 ).from_pretrained(args.image_pretrained)
+                                                do_normalize=True, 
+                                                image_mean=(0.485, 0.456, 0.406), image_std=(0.229, 0.224, 0.225)
+                                                ).from_pretrained(args.vit_image_pretrained)
     else:
         feature_extractor = ViTFeatureExtractor(do_resize=True, size=args.input_size, 
                                                 do_normalize=True, 
@@ -213,7 +216,7 @@ def main(args):
     save_dir = args.output
     now = datetime.now()
     now_str = now.strftime("%d_%m_%Y__%H_%M_%S")
-    best_model_filename = '{}_{}_{}_{}_{}.pt'.format(args.model, args.vit_backbone, args.cnn_backbone, args.bert_type, now_str)
+    best_model_filename = '{}_{}_{}_{}.pt'.format(args.model, args.backbone, args.bert_type, now_str)
     save_model_path_name = os.path.join(save_dir, best_model_filename)
     # biobert_path_name = os.path.join(save_dir, '{}_{}_{}.pt'.format(args.bert_type, args.backbone, now_str))
     
