@@ -213,7 +213,7 @@ def main(args):
     save_dir = args.output
     now = datetime.now()
     now_str = now.strftime("%d_%m_%Y__%H_%M_%S")
-    best_model_filename = '{}_{}_{}_{}_{}.pt'.format(args.model, args.vit_backbone, args.cnn_backbone, args.bert_type, now_str)
+    best_model_filename = '{}_{}_{}_{}.pt'.format(args.model, args.backbone, args.bert_type, now_str)
     save_model_path_name = os.path.join(save_dir, best_model_filename)
     # biobert_path_name = os.path.join(save_dir, '{}_{}_{}.pt'.format(args.bert_type, args.backbone, now_str))
     
