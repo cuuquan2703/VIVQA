@@ -611,7 +611,7 @@ def build_GuidedAtt(args):
     v_vit_dim = args.v_vit_dim
     v_vit_emb = initialize_backbone_model(args.vit_backbone, use_imagenet_pretrained=args.vit_image_pretrained)[0]
 
-    print('Loading CNN feature extractor...')
+    print(f'Loading CNN ({args.cnn_image_pretrained}) feature extractor...')
     v_cnn_dim = args.v_cnn_dim
     v_cnn_emb = initialize_backbone_model(args.cnn_backbone, use_imagenet_pretrained=args.cnn_image_pretrained)[0]
 
