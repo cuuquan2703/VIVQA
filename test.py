@@ -157,7 +157,7 @@ def main(args):
     #     ]),
     # }
     tokenizer = AutoTokenizer.from_pretrained(args.bert_pretrained)
-    ft_image_pretrained = args.vit_image_pretrained if model == 'GuidedAtt' else args.image_pretrained
+    ft_image_pretrained = args.vit_image_pretrained if args.model == 'GuidedAtt' else args.image_pretrained
     feature_extractor = ViTFeatureExtractor(do_resize=True, size=args.input_size, 
                                              do_normalize=True, 
                                              image_mean=(0.485, 0.456, 0.406), image_std=(0.229, 0.224, 0.225)
