@@ -28,7 +28,7 @@ class CustomCNNModel(nn.Module):
 
     def forward(self, x):
         x = x['pixel_values']
-        out = self.model(x)  # [batch, dim, w, h]
+        out = self.model(x)[0]  # [batch, dim, w, h]
         b, dim, w, h = out.shape
         return out.view((b, dim, -1)).permute((0, 2, 1))
 
@@ -101,19 +101,13 @@ def initialize_backbone_model(model_name, is_training=True, use_imagenet_pretrai
             layers[name] = output.detach()
         return hook
 
-    if "resnet" in model_name:
+    if "resnet" in model_name or 'vgg' in model_name:
         """ ResNet
         """
-        model = create_model(model_name, pretrained=use_imagenet_pretrained, num_classes=0, global_pool='')
+        model = create_model(model_name, pretrained=use_imagenet_pretrained, 
+                             num_classes=0, features_only=True, out_indices=[-1])
         model_ft = CustomCNNModel(model)
         # model_ft.fc = nn.Linear(num_ftrs, num_classes)
-
-    elif model_name == "vgg":
-        """ VGG11_bn
-        """
-        model_ft = models.vgg11_bn(pretrained=use_imagenet_pretrained)
-        num_ftrs = model_ft.classifier[6].in_features
-        # model_ft.classifier[6] = nn.Linear(num_ftrs,num_classes)
 
     elif model_name == "squeezenet":
         """ Squeezenet
