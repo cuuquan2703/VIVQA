@@ -583,7 +583,7 @@ class GuidedAttentionModel(nn.Module):
         v_feats = []
         for v_emb, visual_guided_att, visual_reduce in zip(self.v_embs, self.visual_guided_atts, self.visual_reduces):
             v_embed = v_emb(v)
-            v_guided = visual_guided_att(v_embed, q_feat)
+            v_guided = visual_guided_att(v_embed, v_embed)
             v_feats.append(visual_reduce(v_guided, v_embed))
         
         v_joint_feat = torch.cat(v_feats, dim=1)
@@ -615,8 +615,8 @@ def build_GuidedAtt(args):
     v_cnn_dim = args.v_cnn_dim
     v_cnn_emb = initialize_backbone_model(args.cnn_image_pretrained, use_imagenet_pretrained=True)[0]
 
-    visual_vit_guided_att = GuidedTransformerEncoder(v_vit_dim, q_dim, args.num_heads, args.hidden_dim, args.dropout)
-    visual_cnn_guided_att = GuidedTransformerEncoder(v_cnn_dim, q_dim, args.num_heads, args.hidden_dim, args.dropout)
+    visual_vit_guided_att = GuidedTransformerEncoder(v_vit_dim, v_vit_dim, args.num_heads, args.hidden_dim, args.dropout)
+    visual_cnn_guided_att = GuidedTransformerEncoder(v_cnn_dim, v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
 
     visual_vit_reduced = AttentionReduce(v_vit_dim, v_vit_dim // 2, args.glimpse)
     visual_cnn_reduced = AttentionReduce(v_cnn_dim, v_cnn_dim // 2, args.glimpse)
