@@ -5,7 +5,7 @@ This code is developed based on Jin-Hwa Kim's repository (Bilinear Attention Net
 import torch
 import torch.nn as nn
 from attention import BiAttention, StackedAttention
-from co_attention import CoTransformerBlock, FusionAttentionFeature, GuidedTransformerEncoder, AttentionReduce
+from co_attention import CoTransformerBlock, FusionAttentionFeature, GuidedTransformerEncoder, AttentionReduce, FusionLinear
 from language_model import WordEmbedding, QuestionEmbedding, BertQuestionEmbedding, SelfAttention
 from classifier import SimpleClassifier
 from fc import FCNet
@@ -565,7 +565,7 @@ def build_CrossAtt(args):
 
 
 class GuidedAttentionModel(nn.Module):
-    def __init__(self, q_emb, v_embs, visual_guided_atts, visual_reduces, q_guided_att, classifier, args):
+    def __init__(self, q_emb, v_embs, visual_guided_atts, visual_reduces, fusion, q_guided_att, classifier, args):
         super(GuidedAttentionModel, self).__init__()
         self.q_emb = q_emb
         
@@ -573,6 +573,7 @@ class GuidedAttentionModel(nn.Module):
         self.visual_guided_atts = nn.ModuleList(visual_guided_atts)
         self.visual_reduces = nn.ModuleList(visual_reduces)
 
+        self.fusion = fusion
         self.q_guided_att = q_guided_att
         self.classifier = classifier
         self.flatten = nn.Flatten()
@@ -584,12 +585,12 @@ class GuidedAttentionModel(nn.Module):
         for v_emb, visual_guided_att, visual_reduce in zip(self.v_embs, self.visual_guided_atts, self.visual_reduces):
             v_embed = v_emb(v)
             v_guided = visual_guided_att(v_embed, v_embed)
-            v_feats.append(visual_reduce(v_guided, v_embed))
+            # v_feats.append(visual_reduce(v_guided, v_embed))
+            v_feats.append(v_guided.mean(1, keep_dim=True))
         
-        v_joint_feat = torch.cat(v_feats, dim=1)
-
-        v_joint_feat = v_joint_feat.unsqueeze(1)
-
+        # v_joint_feat = torch.cat(v_feats, dim=1)
+        # v_joint_feat = v_joint_feat.unsqueeze(1)
+        v_joint_feat = self.fusion(*v_feats)
         out = self.q_guided_att(q_feat, v_joint_feat)
         
         out = out.mean(1, keepdim =True)
@@ -620,8 +621,11 @@ def build_GuidedAtt(args):
 
     visual_vit_reduced = AttentionReduce(v_vit_dim, v_vit_dim // 2, args.glimpse)
     visual_cnn_reduced = AttentionReduce(v_cnn_dim, v_cnn_dim // 2, args.glimpse)
+    
+    fusion = FusionLinear(768, 512, 1024)
+    
 
-    question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim, args.num_heads, args.hidden_dim, args.dropout)
+    question_guided_att = GuidedTransformerEncoder(q_dim, 1024, args.num_heads, args.hidden_dim, args.dropout)
     # question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim + v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
 
     classifier = SimpleClassifier(
@@ -632,6 +636,7 @@ def build_GuidedAtt(args):
         [v_vit_emb], 
         [visual_vit_guided_att],
         [visual_vit_reduced],
+        fusion,
         question_guided_att,
         classifier,
         args

@@ -171,3 +171,17 @@ class FusionAttentionReduce(nn.Module):
 
         return out
         
+class FusionLinear(nn.Module):
+    def __init__(self, in_dim_1, in_dim_2, out_dim) -> None:
+        super(FusionLinear, self).__init__()
+        self.ffn_1 = nn.Linear(in_dim_1, out_dim)
+        self.ffn_2 = nn.Linear(in_dim_2, out_dim)
+        self.layer_norm = nn.LayerNorm(out_dim)
+
+    def forward(self, x1, x2):
+        '''Forward
+        v_feat: [batch, v_len, v_dim]
+        q_feat: [batch, q_len, q_dim]
+        '''
+        return self.layer_norm(self.ffn_1(x1) + self.ffn_2(x2))
+        
