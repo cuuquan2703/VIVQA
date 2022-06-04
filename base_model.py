@@ -606,7 +606,7 @@ class GuidedAttentionModel(nn.Module):
         q_feat = self.q_guided_att(q_feat, v_joint_feat)
         q_feat = q_feat.mean(1)
         
-        out = self.fusion(q_feat, v_joint_feat)
+        out = self.fusion(q_feat, v_joint_feat.squeeze(1))
 
         return out
     
