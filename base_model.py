@@ -604,7 +604,7 @@ class GuidedAttentionModel(nn.Module):
         v_joint_feat = v_joint_feat.unsqueeze(1)
 
         q_feat = self.q_guided_att(q_feat, v_joint_feat)
-        q_feat = torch.mean(1)
+        q_feat = q_feat.mean(1)
         
         out = self.fusion(q_feat, v_joint_feat)
 
