@@ -590,6 +590,7 @@ class GuidedAttentionModel(nn.Module):
         
         # v_joint_feat = torch.cat(v_feats, dim=1)
         # v_joint_feat = v_joint_feat.unsqueeze(1)
+        
         v_joint_feat = self.fusion(*v_feats)
         out = self.q_guided_att(q_feat, v_joint_feat)
         
@@ -633,9 +634,9 @@ def build_GuidedAtt(args):
 
     return GuidedAttentionModel(
         q_emb, 
-        [v_vit_emb], 
-        [visual_vit_guided_att],
-        [visual_vit_reduced],
+        [v_vit_emb, v_cnn_emb], 
+        [visual_vit_guided_att, visual_cnn_guided_att],
+        [visual_vit_reduced, visual_cnn_reduced],
         fusion,
         question_guided_att,
         classifier,
