@@ -621,7 +621,8 @@ def build_GuidedAtt(args):
     visual_vit_reduced = AttentionReduce(v_vit_dim, v_vit_dim // 2, args.glimpse)
     visual_cnn_reduced = AttentionReduce(v_cnn_dim, v_cnn_dim // 2, args.glimpse)
 
-    question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim + v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
+    question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim, args.num_heads, args.hidden_dim, args.dropout)
+    # question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim + v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
 
     classifier = SimpleClassifier(
         args.joint_dim, args.joint_dim * 2, args.num_classes, args)
