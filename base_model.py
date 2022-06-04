@@ -589,11 +589,12 @@ class GuidedAttentionModel(nn.Module):
             # v_feats.append(visual_reduce(v_guided, v_embed))
             v_feats.append(visual_reduce(v_embed, v_embed))
             # v_feats.append(v_guided.mean(1, keepdim=True))
-        
-        # v_joint_feat = torch.cat(v_feats, dim=1)
-        # v_joint_feat = v_joint_feat.unsqueeze(1)
 
         v_joint_feat = self.fusion(*v_feats)
+        
+        # v_joint_feat = torch.cat(v_feats, dim=1)
+        v_joint_feat = v_joint_feat.unsqueeze(1)
+
         out = self.q_guided_att(q_feat, v_joint_feat)
         
         out = out.mean(1, keepdim =True)
