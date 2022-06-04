@@ -167,7 +167,7 @@ class FusionAttentionReduce(nn.Module):
         q_att = F.softmax(q_converted, dim=1)
         q_atted = torch.sum(q_att * q_feat, dim=1)
         
-        out = self.layer_norm(v_atted + q_atted)
+        out = self.layer_norm(v_atted * q_atted)
 
         return out
         
@@ -183,5 +183,5 @@ class FusionLinear(nn.Module):
         v_feat: [batch, v_len, v_dim]
         q_feat: [batch, q_len, q_dim]
         '''
-        return self.layer_norm(self.ffn_1(x1) + self.ffn_2(x2))
+        return self.layer_norm(self.ffn_1(x1) * self.ffn_2(x2))
         
