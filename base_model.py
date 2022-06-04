@@ -637,7 +637,7 @@ def build_GuidedAtt(args):
     fusion = FusionLinear(768, 512 + 768, 1024)
     
 
-    question_guided_att = GuidedTransformerEncoder(q_dim, 1024, args.num_heads, args.hidden_dim, args.dropout)
+    question_guided_att = GuidedTransformerEncoder(q_dim, 1280, args.num_heads, args.hidden_dim, args.dropout)
     # question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim + v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
 
     classifier = SimpleClassifier(
