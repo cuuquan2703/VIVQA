@@ -592,7 +592,7 @@ class GuidedAttentionModel(nn.Module):
             # v_feats.append(visual_reduce(v_embed, v_embed))
             # v_feats.append(v_guided.mean(1, keepdim=True))
 
-        # v_joint_feat = self.fusion(*v_feats)
+        v_joint_feat = self.fusion(*v_feats)
         
         # v_joint_feat = torch.cat(v_feats, dim=1)
         # v_joint_feat = v_joint_feat.unsqueeze(1)
@@ -602,8 +602,8 @@ class GuidedAttentionModel(nn.Module):
         # out = out.mean(1, keepdim =True) # average pooling
         # out = self.flatten(out)
 
-        v_joint_feat = torch.cat(v_feats, dim=1)
-        v_joint_feat = v_joint_feat.unsqueeze(1)
+        # v_joint_feat = torch.cat(v_feats, dim=1)
+        # v_joint_feat = v_joint_feat.unsqueeze(1)
 
         q_feat = self.q_guided_att(q_feat, v_joint_feat)
         out = self.question_reduced(q_feat, q_feat)
