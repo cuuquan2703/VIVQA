@@ -603,7 +603,7 @@ class GuidedAttentionModel(nn.Module):
         # out = self.flatten(out)
 
         # v_joint_feat = torch.cat(v_feats, dim=1)
-        # v_joint_feat = v_joint_feat.unsqueeze(1)
+        v_joint_feat = v_joint_feat.unsqueeze(1)
 
         q_feat = self.q_guided_att(q_feat, v_joint_feat)
         out = self.question_reduced(q_feat, q_feat)
