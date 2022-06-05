@@ -575,6 +575,8 @@ class GuidedAttentionModel(nn.Module):
 
         self.fusion = fusion
         self.q_guided_att = q_guided_att
+        self.question_reduced = AttentionReduce(768, 768 // 2, 1)
+
         self.classifier = classifier
         self.flatten = nn.Flatten()
     
@@ -604,9 +606,9 @@ class GuidedAttentionModel(nn.Module):
         v_joint_feat = v_joint_feat.unsqueeze(1)
 
         q_feat = self.q_guided_att(q_feat, v_joint_feat)
-        q_feat = q_feat.mean(1)
+        out = self.question_reduced(q_feat, q_feat)
         
-        out = self.fusion(q_feat, v_joint_feat.squeeze(1))
+        # out = self.fusion(q_feat, v_joint_feat.squeeze(1))
 
         return out
     
