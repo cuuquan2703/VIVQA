@@ -130,7 +130,7 @@ class AttentionReduce(nn.Module):
         att_list = []
         for i in range(self.glimpses):
             att_list.append(
-                torch.sum(x_reduced[:, :, i: i + 1] * y, dim=1)
+                torch.mean(x_reduced[:, :, i: i + 1] * y, dim=1)
             )
         x_atted = torch.cat(att_list, dim=1)
         
