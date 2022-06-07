@@ -586,29 +586,29 @@ class GuidedAttentionModel(nn.Module):
         v_feats = []
         for v_emb, visual_guided_att, visual_reduce in zip(self.v_embs, self.visual_guided_atts, self.visual_reduces):
             v_embed = v_emb(v)
-            v_guided = visual_guided_att(v_embed, v_embed)
+            v_guided = visual_guided_att(v_embed, q_feat)
             
             v_feats.append(visual_reduce(v_guided, v_embed))
             # v_feats.append(visual_reduce(v_embed, v_embed))
             # v_feats.append(v_guided.mean(1, keepdim=True))
 
-        v_joint_feat = self.fusion(*v_feats)
+        # v_joint_feat = self.fusion(*v_feats)
         
+        v_joint_feat = torch.cat(v_feats, dim=1)
+        v_joint_feat = v_joint_feat.unsqueeze(1)
+
+        out = self.q_guided_att(q_feat, v_joint_feat)
+        
+        out = out.mean(1, keepdim =True) # average pooling
+        out = self.flatten(out)
+
         # v_joint_feat = torch.cat(v_feats, dim=1)
         # v_joint_feat = v_joint_feat.unsqueeze(1)
 
-        # out = self.q_guided_att(q_feat, v_joint_feat)
+        # q_feat = self.q_guided_att(q_feat, v_joint_feat)
+        # out = self.question_reduced(q_feat, q_feat)
         
-        # out = out.mean(1, keepdim =True) # average pooling
-        # out = self.flatten(out)
-
-        # v_joint_feat = torch.cat(v_feats, dim=1)
-        v_joint_feat = v_joint_feat.unsqueeze(1)
-
-        q_feat = self.q_guided_att(q_feat, v_joint_feat)
-        out = self.question_reduced(q_feat, q_feat)
-        
-        # out = self.fusion(q_feat, v_joint_feat.squeeze(1))
+        # # out = self.fusion(q_feat, v_joint_feat.squeeze(1))
 
         return out
     
@@ -630,17 +630,16 @@ def build_GuidedAtt(args):
     v_cnn_dim = args.v_cnn_dim
     v_cnn_emb = initialize_backbone_model(args.cnn_image_pretrained, use_imagenet_pretrained=True)[0]
 
-    visual_vit_guided_att = GuidedTransformerEncoder(v_vit_dim, v_vit_dim, args.num_heads, args.hidden_dim, args.dropout)
-    visual_cnn_guided_att = GuidedTransformerEncoder(v_cnn_dim, v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
+    visual_vit_guided_att = GuidedTransformerEncoder(v_vit_dim, q_dim, args.num_heads, args.hidden_dim, args.dropout)
+    visual_cnn_guided_att = GuidedTransformerEncoder(v_cnn_dim, q_dim, args.num_heads, args.hidden_dim, args.dropout)
 
     visual_vit_reduced = AttentionReduce(v_vit_dim, v_vit_dim // 2, args.glimpse)
     visual_cnn_reduced = AttentionReduce(v_cnn_dim, v_cnn_dim // 2, args.glimpse)
     
     fusion = FusionLinear(768, 512, 1024)
     
-
-    question_guided_att = GuidedTransformerEncoder(q_dim, 1024, args.num_heads, args.hidden_dim, args.dropout)
-    # question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim + v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
+    # question_guided_att = GuidedTransformerEncoder(q_dim, 1024, args.num_heads, args.hidden_dim, args.dropout)
+    question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim + v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
 
     classifier = SimpleClassifier(
         args.joint_dim, args.joint_dim * 2, args.num_classes, args)
