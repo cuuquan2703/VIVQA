@@ -594,7 +594,7 @@ class GuidedAttentionModel(nn.Module):
 
         # v_joint_feat = self.fusion(*v_feats)
         
-        v_joint_feat = torch.cat(v_feats, dim=1)
+        v_joint_feat = torch.sum(v_feats, dim=1)
         v_joint_feat = v_joint_feat.unsqueeze(1)
         
         # out = out.mean(1, keepdim =True) # average pooling
@@ -643,7 +643,7 @@ def build_GuidedAtt(args):
     # question_guided_att = GuidedTransformerEncoder(q_dim, 1024, args.num_heads, args.hidden_dim, args.dropout)
     question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim + v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
 
-    fusion = FusionLinear(q_dim, v_vit_dim + v_cnn_dim, args.joint_dim)
+    fusion = FusionLinear(q_dim, v_vit_dim, args.joint_dim)
 
     classifier = SimpleClassifier(
         args.joint_dim, args.joint_dim * 2, args.num_classes, args)
