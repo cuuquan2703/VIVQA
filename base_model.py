@@ -642,7 +642,7 @@ def build_GuidedAtt(args):
     visual_cnn_reduced = AttentionReduce(v_cnn_dim, v_cnn_dim // 2, args.glimpse)    
     
     # question_guided_att = GuidedTransformerEncoder(q_dim, 1024, args.num_heads, args.hidden_dim, args.dropout)
-    question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim + v_cnn_dim, args.num_heads, args.hidden_dim, args.dropout)
+    question_guided_att = GuidedTransformerEncoder(q_dim, v_vit_dim, args.num_heads, args.hidden_dim, args.dropout)
 
     fusion = FusionLinear(q_dim, v_vit_dim, args.joint_dim)
 
