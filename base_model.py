@@ -594,7 +594,8 @@ class GuidedAttentionModel(nn.Module):
 
         # v_joint_feat = self.fusion(*v_feats)
         
-        v_joint_feat = torch.sum(v_feats, dim=1)
+        v_joint_feat = torch.stack(v_feats, dim=-1).sum(-1)
+        # v_joint_feat = torch.cat(v_feats, dim=1)
         v_joint_feat = v_joint_feat.unsqueeze(1)
         
         # out = out.mean(1, keepdim =True) # average pooling
