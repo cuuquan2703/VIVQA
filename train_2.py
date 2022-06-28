@@ -149,7 +149,7 @@ def main(args):
     #         trforms.ToTensor()
     #     ]),
     # }
-    tokenizer = AutoTokenizer.from_pretrained(args.bert_pretrained, args.question_length)
+    tokenizer = AutoTokenizer.from_pretrained(args.bert_pretrained)
     if args.object_detection:
         feature_extractor = YolosFeatureExtractor(do_resize=True, size=args.input_size, 
                                                 do_normalize=True, 
