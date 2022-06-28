@@ -189,7 +189,7 @@ def main(args):
         dummy_question = ['Hello, this is a question'] * args.batch_size
         dummy_question_feats = tokenizer(dummy_question, padding='max_length', max_length=args.question_len, 
                                                    truncation=True, return_tensors='pt').to(device)
-        print(summary(model, input_data=[dummy_image_feats, dummy_question_feats]))
+        print(summary(model, input_data=[dummy_image_feats, dummy_question_feats]), device=device)
         return model
     
     # Initialize optimizer algorithm
