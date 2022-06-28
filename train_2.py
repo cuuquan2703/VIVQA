@@ -186,7 +186,7 @@ def main(args):
     
     if args.print_summary:
         dummy_image = { 'pixel_values': torch.rand((args.batch_size, 3, args.input_size, args.input_size)).to(device) }
-        dummy_question = ['abc'] * args.batch_size
+        dummy_question = ['Hello, this is a question'] * args.batch_size
         dummy_question = tokenizer(dummy_question, padding='max_length', max_length=args.question_len, 
                                                    truncation=True, return_tensors='pt').to(device)
         print(summary(model, input_data=[dummy_image, dummy_question]))
