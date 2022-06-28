@@ -149,7 +149,7 @@ def main(args):
     #         trforms.ToTensor()
     #     ]),
     # }
-    tokenizer = AutoTokenizer.from_pretrained(args.bert_pretrained)
+    tokenizer = AutoTokenizer.from_pretrained(args.bert_pretrained, args.question_length)
     if args.object_detection:
         feature_extractor = YolosFeatureExtractor(do_resize=True, size=args.input_size, 
                                                 do_normalize=True, 
@@ -185,8 +185,11 @@ def main(args):
     model.to(device)
     
     if args.print_summary:
-        print(summary(model, input_data=[(args.batch_size, 3, args.input_size, args.input_size),
-                                         (args.batch_size, args.question_len, args)]))
+        dummy_image = { 'pixel_values': torch.rand((args.batch_size, 3, args.input_size, args.input_size)).to(device) }
+        dummy_question = ['abc'] * args.batch_size
+        dummy_question = tokenizer(dummy_question, padding='max_length', max_length=args.question_len, 
+                                                   truncation=True, return_tensors='pt').to(device)
+        print(summary(model, input_data=[dummy_image, dummy_question]))
         return model
     
     # Initialize optimizer algorithm
