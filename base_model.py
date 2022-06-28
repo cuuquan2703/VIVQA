@@ -652,9 +652,9 @@ def build_GuidedAtt(args):
 
     return GuidedAttentionModel(
         q_emb, 
-        [v_cnn_emb], 
-        [visual_cnn_guided_att],
-        [visual_cnn_reduced],
+        [v_vit_emb], 
+        [visual_vit_guided_att],
+        [visual_vit_reduced],
         fusion,
         question_guided_att,
         classifier,
