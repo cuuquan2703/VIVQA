@@ -185,11 +185,11 @@ def main(args):
     model.to(device)
     
     if args.print_summary:
-        dummy_image = { 'pixel_values': torch.rand((args.batch_size, 3, args.input_size, args.input_size)).to(device) }
+        dummy_image_feats = { 'pixel_values': torch.rand((args.batch_size, 3, args.input_size, args.input_size)).to(device) }
         dummy_question = ['Hello, this is a question'] * args.batch_size
-        dummy_question = tokenizer(dummy_question, padding='max_length', max_length=args.question_len, 
+        dummy_question_feats = tokenizer(dummy_question, padding='max_length', max_length=args.question_len, 
                                                    truncation=True, return_tensors='pt').to(device)
-        print(summary(model, input_data=[dummy_image, dummy_question]))
+        print(summary(model, input_data=[dummy_image_feats, dummy_question_feats]))
         return model
     
     # Initialize optimizer algorithm
