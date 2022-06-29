@@ -212,6 +212,7 @@ def main(args):
             
             print('Image: ')
             plt.imshow(transforms.ToPILImage()(transforms.ToTensor()(org_img)), interpolation="bicubic")
+            plt.show()
             print('Question: ', org_question[0])
             print(f'Answer: {answer}; \tLabel index: {label[0]}')
 
