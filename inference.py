@@ -14,7 +14,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
 from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
-%matplotlib inline
+from google.colab.patches import cv2_imshow
 
 # from tensorboardX import SummaryWriter
 
@@ -213,8 +213,9 @@ def main(args):
             # one_hot_label = torch.nn.functional.one_hot(label, args.num_classes).float()
             
             print('Image: ')
-            plt.imshow(transforms.ToPILImage()(transforms.ToTensor()(org_img)), interpolation="bicubic")
-            plt.show()
+            # plt.imshow(transforms.ToPILImage()(transforms.ToTensor()(org_img)), interpolation="bicubic")
+            # plt.show()
+            cv2_imshow(org_img)
             print('Question: ', org_question[0])
             print(f'Answer: {answer}; \tLabel index: {label[0]}')
 
