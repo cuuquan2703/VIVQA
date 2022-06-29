@@ -231,7 +231,8 @@ def main(args):
             y_pred = torch.nn.functional.softmax(output, dim=1)
             y_pred = torch.argmax(y_pred, dim=1, keepdim=False)
             
-            print('Model prediction: Answer: {}; Label indice: {}'.format(dataset.id2ans[y_pred[0]], y_pred[0]))
+            label_pred = int(y_pred[0])
+            print('Model prediction: Answer: {}; Label indice: {}'.format(dataset.id2ans[label_pred], label_pred))
 
 
     total_loss /= len(dataset)
