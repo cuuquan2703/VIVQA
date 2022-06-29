@@ -205,15 +205,16 @@ def main(args):
             # Every data instance is an input + img_label pair
             print('\n--------')
             print(f'Inference {i+1}:')
-            org_question, org_img, answer, label = data['org_question'], data['org_image'], data['answer'][0], data['label'][0]
-            print('Image: ')
-            plt.imshow(org_img)
-            print('Question: ', org_question[0])
-            print(f'Answer: {answer}; \tLabel index: {label}')
-    
+            org_question, org_img, answer = data['org_question'], data['org_image'], data['answer'][0]
             question, img, label = data['question'], data['image'], data['label']
             question, img, label = question.to(device), img.to(device), label.to(device)
             # one_hot_label = torch.nn.functional.one_hot(label, args.num_classes).float()
+            
+            print('Image: ')
+            org_img = plt.imshow(transforms.ToPILImage()(transforms.ToTensor()(org_img)), interpolation="bicubic")
+            plt.imshow(org_img)
+            print('Question: ', org_question[0])
+            print(f'Answer: {answer}; \tLabel index: {label[0]}')
 
             # Make predictions for this batch
             output = model.forward(img, question)
