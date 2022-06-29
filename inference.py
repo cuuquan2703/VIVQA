@@ -211,8 +211,7 @@ def main(args):
             # one_hot_label = torch.nn.functional.one_hot(label, args.num_classes).float()
             
             print('Image: ')
-            org_img = plt.imshow(transforms.ToPILImage()(transforms.ToTensor()(org_img)), interpolation="bicubic")
-            plt.imshow(org_img)
+            plt.imshow(transforms.ToPILImage()(transforms.ToTensor()(org_img)), interpolation="bicubic")
             print('Question: ', org_question[0])
             print(f'Answer: {answer}; \tLabel index: {label[0]}')
 
