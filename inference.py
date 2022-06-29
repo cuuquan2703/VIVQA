@@ -215,7 +215,7 @@ def main(args):
             print('Image: ')
             # plt.imshow(transforms.ToPILImage()(transforms.ToTensor()(org_img)), interpolation="bicubic")
             # plt.show()
-            cv2_imshow(org_img)
+            org_img.show()
             print('Question: ', org_question[0])
             print(f'Answer: {answer}; \tLabel index: {label[0]}')
 
