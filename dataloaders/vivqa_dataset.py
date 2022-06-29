@@ -85,6 +85,7 @@ class ViVQADataset(data.Dataset):
 
         return {
             'question': question,
+            'org_image': img,
             'image': sample_t['image'],
             'label': label,
             'answer': answer
@@ -106,7 +107,7 @@ class VTCollator:
     def __call__(self, batch):
         encodings = {}
         if self.store_origin_data: 
-            encodings['org_image'] = [x['image'] for x in batch]
+            encodings['org_image'] = [x['org_image'] for x in batch]
             encodings['org_question'] = [x['question'] for x in batch]
             encodings['answer'] = [x['answer'] for x in batch]
             
