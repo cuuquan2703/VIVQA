@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 # from model.segment_decoder import Decoder
 import base_model
 
-from dataloader import custom_transforms as trforms
-from dataloader.vivqa_dataset import ViVQADataset, VTCollator
+from dataloaders import custom_transforms as trforms
+from dataloaders.vivqa_dataset import ViVQADataset, VTCollator
 from transformers import ViTFeatureExtractor, DeiTFeatureExtractor, AutoTokenizer, get_linear_schedule_with_warmup
 import utils
 
