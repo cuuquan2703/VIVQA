@@ -205,7 +205,7 @@ def main(args):
             # Every data instance is an input + img_label pair
             print('\n--------')
             print(f'Inference {i+1}:')
-            org_question, org_img, answer = data['org_question'], data['org_image'], data['answer'][0]
+            org_question, org_img, answer = data['org_question'], data['org_image'][0], data['answer'][0]
             question, img, label = data['question'], data['image'], data['label']
             question, img, label = question.to(device), img.to(device), label.to(device)
             # one_hot_label = torch.nn.functional.one_hot(label, args.num_classes).float()
