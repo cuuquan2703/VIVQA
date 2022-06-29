@@ -203,8 +203,9 @@ def main(args):
        # Loop over training data
         for i, data in enumerate(dataloader):
             # Every data instance is an input + img_label pair
-            print(f'\nInference {i+1}:')
-            org_question, org_img, answer, label = data['org_question'][0], data['org_image'][0], data['answer'][0], data['label'][0]
+            print('\n--------')
+            print(f'Inference {i+1}:')
+            org_question, org_img, answer, label = data['org_question'], data['org_image'], data['answer'][0], data['label'][0]
             print('Image: ')
             plt.imshow(org_img)
             print('Question: ', org_question[0])
@@ -217,11 +218,6 @@ def main(args):
             # Make predictions for this batch
             output = model.forward(img, question)
             output = model.classify(output)
-            
-            y_pred = torch.nn.functional.softmax(y_pred, dim=1)
-            y_pred = torch.argmax(y_pred, dim=1, keepdim=False)
-            
-            print('Model prediction: Answer: {}; Label indice: {}'.format(dataset.id2ans[y_pred[0]], y_pred[0]))
 
             # Compute the loss and accuracy
             loss = loss_fn(output, label)
@@ -231,14 +227,20 @@ def main(args):
             # Calculate accuracy for classification task
             acc = utils.calc_acc(output, label)
             total_acc += acc
+                        
+            y_pred = torch.nn.functional.softmax(output, dim=1)
+            y_pred = torch.argmax(y_pred, dim=1, keepdim=False)
+            
+            print('Model prediction: Answer: {}; Label indice: {}'.format(dataset.id2ans[y_pred[0]], y_pred[0]))
+
 
     total_loss /= len(dataset)
     total_acc /= len(dataloader)
 
     train_time = time.time() - start_time
-    print('Validation complete in {:.0f}m {:.0f}s'.format(train_time // 60, train_time % 60))
-    print('+ Validation accuracy: {:2f} %'.format(total_acc * 100))
-    print('+ Validation loss: {:4f}'.format(total_loss))
+    print('Inference complete in {:.0f}m {:.0f}s'.format(train_time // 60, train_time % 60))
+    print('+ Inference accuracy: {:2f} %'.format(total_acc * 100))
+    print('+ Inference loss: {:4f}'.format(total_loss))
     
     return model
 
