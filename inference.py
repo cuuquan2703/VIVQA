@@ -4,6 +4,7 @@ from datetime import datetime
 import time
 import os
 from itertools import chain
+import matplotlib
 import pandas as pd
 import numpy as np
 
@@ -13,6 +14,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Subset
 from torchvision.utils import make_grid
 import matplotlib.pyplot as plt
+%matplotlib inline
 
 # from tensorboardX import SummaryWriter
 
