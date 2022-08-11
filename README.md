@@ -1,7 +1,7 @@
 Models for Visual Question Answering on ViVQA dataset
 
 # Requirement
-Python package: 
+Python package:
 + timm
 + torchinfo
 + transformers
